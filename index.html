@@ -901,6 +901,22 @@
       transform-origin: center;
       /* Step-based: NO transition. Each state change snaps instantly. */
     }
+
+    /* ── INTRO: hide everything except nav-bar, headline, date until ready ── */
+    .landing-subheadline,
+    .landing-bio,
+    .landing-bottom,
+    .block:not(.landing) {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    body.ready .landing-subheadline,
+    body.ready .landing-bio,
+    body.ready .landing-bottom,
+    body.ready .block:not(.landing) {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -1042,6 +1058,12 @@
   </div>
 
   <script>
+    // Force the page to start at the top on every load/refresh.
+    // Without this, browsers restore the previous scroll position, which
+    // skips past the landing animation.
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    if (!window.location.hash) window.scrollTo(0, 0);
+
     /* ═══════════════════════════════════════════════
        ARTIST DATA
        ─────────────────────────────────────────────
@@ -1199,14 +1221,14 @@
     const navDate = document.getElementById('navDate');
     navDate.textContent = today().toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' });
 
-    // ── HEADLINE LETTER ANIMATION (step-based, no smooth transitions)
+    // ── LETTER ANIMATION (step-based, no smooth transitions)
     // 1) Letters appear ONE AT A TIME in random order, scattered around the
     //    viewport at a rotation of 0, 90, or 180°.
-    // 2) Once all are visible, each snaps into its place in the word
-    //    (keeping its rotation) at staggered times.
-    // 3) Once all are in place, each rotates back to 0° at staggered times.
-    (function animateHeadline() {
-      const el = document.querySelector('.landing-headline');
+    // 2) Once all are visible, each snaps into its place in the word —
+    //    most letters straighten in the same step, but ~40% land still
+    //    rotated and then snap to 0° a beat later.
+    function animateLetters(selector) {
+      const el = document.querySelector(selector);
       if (!el) return;
       const text = el.textContent;
       el.setAttribute('aria-label', text);
@@ -1238,17 +1260,20 @@
       }
 
       // Tune the rhythm here:
-      const APPEAR_STEP   = 140;  // ms between each letter becoming visible
-      const SETTLE_STEP   = 180;  // ms between each letter snapping into place
-      const ROTATE_WINDOW = 1500; // random span for letters snapping to 0°
-      const PAUSE_BETWEEN = 400;  // pause between each phase
+      const APPEAR_STEP    = 140; // ms between each letter becoming visible
+      const SETTLE_STEP    = 180; // ms between each letter snapping into place
+      const PAUSE_BETWEEN  = 400; // pause between phases
+      const TWO_STEP_RATIO = 0.4; // fraction of letters that land still rotated
+      const ROTATE_DELAY_MIN = 250; // ms before a two-step letter snaps to 0°
+      const ROTATE_DELAY_MAX = 850;
 
-      // Phase 1: appear one at a time at random positions
+      // Phase 1: appear one at a time at random positions (random rotation)
       order.forEach((span, n) => {
         setTimeout(() => { span.style.opacity = '1'; }, n * APPEAR_STEP);
       });
 
-      // Phase 2: snap to position ONE AT A TIME in a new random order
+      // Phase 2: snap to position, one letter at a time in a fresh random order.
+      // Some letters land already upright; some land rotated and snap to 0° later.
       const settleOrder = letters.slice();
       for (let i = settleOrder.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -1256,20 +1281,36 @@
       }
       const allVisibleAt = order.length * APPEAR_STEP + PAUSE_BETWEEN;
       settleOrder.forEach((span, n) => {
-        setTimeout(() => {
-          span.style.transform = 'translate(0, 0) rotate(' + span.dataset.rot + 'deg)';
-        }, allVisibleAt + n * SETTLE_STEP);
+        const settleAt = allVisibleAt + n * SETTLE_STEP;
+        const stayRotated = span.dataset.rot !== '0' && Math.random() < TWO_STEP_RATIO;
+        if (stayRotated) {
+          // Land in place still rotated...
+          setTimeout(() => {
+            span.style.transform = 'translate(0, 0) rotate(' + span.dataset.rot + 'deg)';
+          }, settleAt);
+          // ...then snap upright a beat later.
+          const rotateAt = settleAt + ROTATE_DELAY_MIN + Math.random() * (ROTATE_DELAY_MAX - ROTATE_DELAY_MIN);
+          setTimeout(() => {
+            span.style.transform = 'translate(0, 0) rotate(0deg)';
+          }, rotateAt);
+        } else {
+          // Land in place and upright in one step.
+          setTimeout(() => {
+            span.style.transform = 'translate(0, 0) rotate(0deg)';
+          }, settleAt);
+        }
       });
+    }
 
-      // Phase 3: snap to upright (rotation 0°) at staggered times
-      const allSettledAt = allVisibleAt + settleOrder.length * SETTLE_STEP + PAUSE_BETWEEN;
-      letters.forEach((span) => {
-        const t = allSettledAt + Math.random() * ROTATE_WINDOW;
-        setTimeout(() => {
-          span.style.transform = 'translate(0, 0) rotate(0deg)';
-        }, t);
-      });
-    })();
+    animateLetters('.landing-headline');
+    animateLetters('.landing-date');
+
+    // Reveal the rest of the page right as the last letter finishes settling.
+    // For "Mellanrummet" (12 chars) the headline animation ends at roughly:
+    //   12 * APPEAR_STEP (1680) + PAUSE_BETWEEN (400) + 11 * SETTLE_STEP (1980)
+    //   + ROTATE_DELAY_MAX (850 worst-case for two-step) ≈ 4910 ms
+    // Adjust this value if you change those constants.
+    setTimeout(() => { document.body.classList.add('ready'); }, 4900);
 
     // ── DETERMINE CURRENT
     const currentIdx = getCurrentIndex();
