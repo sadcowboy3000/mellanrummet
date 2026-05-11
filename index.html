@@ -7,6 +7,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script>
+    // Run as early as possible so the browser doesn't restore the previous
+    // scroll position before our body script gets a chance to.
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  </script>
   <style>
     /* ── RESET & BASE ── */
     /** {border-style: solid; color: red;}*/
@@ -1059,10 +1064,16 @@
 
   <script>
     // Force the page to start at the top on every load/refresh.
-    // Without this, browsers restore the previous scroll position, which
-    // skips past the landing animation.
+    // (scrollRestoration is also set in <head> so this takes effect before paint.)
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-    if (!window.location.hash) window.scrollTo(0, 0);
+    if (!window.location.hash) {
+      window.scrollTo(0, 0);
+      // pageshow fires for normal loads AND bfcache (back-button) restores.
+      window.addEventListener('pageshow', () => window.scrollTo(0, 0));
+      // Also reset on next animation frame in case the browser tries to
+      // restore after our initial call.
+      requestAnimationFrame(() => window.scrollTo(0, 0));
+    }
 
     /* ═══════════════════════════════════════════════
        ARTIST DATA
