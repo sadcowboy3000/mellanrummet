@@ -53,6 +53,12 @@
       position: relative;
     }
 
+    /* Non-landing blocks fit inside the area visible below the fixed nav-bar,
+       so their bottom-pinned scroll cues land at the bottom of the viewport. */
+    .block:not(.landing) {
+      min-height: calc(100dvh - 3.5rem);
+    }
+
     /* Scroll cue pinned to the bottom of any block */
     .block-cue {
       position: absolute;
@@ -1168,6 +1174,10 @@
     }
 
     function getCurrentIndex() {
+      // ⚠ Temporary override: force the first artist as the current one.
+      // Delete this `return 0` line to restore the date-based logic below.
+      return 0;
+
       const t = today();
       for (let i = 0; i < ARTISTS.length; i++) {
         const s = parseDate(ARTISTS[i].start);
