@@ -892,9 +892,15 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .landing-headline { animation: fadeUp 0.9s ease both; }
     .landing-intro    { animation: fadeUp 0.9s 0.15s ease both; }
     .landing-bottom   { animation: fadeUp 0.9s 0.28s ease both; }
+
+    /* ── HEADLINE LETTER ANIMATION ── */
+    .headline-letter {
+      display: inline-block;
+      transform-origin: center;
+      /* Step-based: NO transition. Each state change snaps instantly. */
+    }
   </style>
 </head>
 <body>
@@ -1192,6 +1198,78 @@
     // ── POPULATE NAV DATE
     const navDate = document.getElementById('navDate');
     navDate.textContent = today().toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // ── HEADLINE LETTER ANIMATION (step-based, no smooth transitions)
+    // 1) Letters appear ONE AT A TIME in random order, scattered around the
+    //    viewport at a rotation of 0, 90, or 180°.
+    // 2) Once all are visible, each snaps into its place in the word
+    //    (keeping its rotation) at staggered times.
+    // 3) Once all are in place, each rotates back to 0° at staggered times.
+    (function animateHeadline() {
+      const el = document.querySelector('.landing-headline');
+      if (!el) return;
+      const text = el.textContent;
+      el.setAttribute('aria-label', text);
+      el.textContent = '';
+
+      const letters = [];
+      for (const ch of text) {
+        const span = document.createElement('span');
+        span.className = 'headline-letter';
+        span.setAttribute('aria-hidden', 'true');
+        span.textContent = ch === ' ' ? ' ' : ch;
+        // Random initial offset within the viewport (no rotation, no fade).
+        // Tune the multipliers to make letters scatter further or stay tighter.
+        const dx = (Math.random() - 0.5) * 70; // ±35vw
+        const dy = (Math.random() - 0.5) * 50; // ±25vh
+        const rot = [0, 90, 180][Math.floor(Math.random() * 3)];
+        span.dataset.rot = rot;
+        span.style.transform = 'translate(' + dx + 'vw, ' + dy + 'vh) rotate(' + rot + 'deg)';
+        span.style.opacity = '0';
+        el.appendChild(span);
+        letters.push(span);
+      }
+
+      // Shuffle a copy of `letters` so they appear in random order.
+      const order = letters.slice();
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+      }
+
+      // Tune the rhythm here:
+      const APPEAR_STEP   = 140;  // ms between each letter becoming visible
+      const SETTLE_STEP   = 180;  // ms between each letter snapping into place
+      const ROTATE_WINDOW = 1500; // random span for letters snapping to 0°
+      const PAUSE_BETWEEN = 400;  // pause between each phase
+
+      // Phase 1: appear one at a time at random positions
+      order.forEach((span, n) => {
+        setTimeout(() => { span.style.opacity = '1'; }, n * APPEAR_STEP);
+      });
+
+      // Phase 2: snap to position ONE AT A TIME in a new random order
+      const settleOrder = letters.slice();
+      for (let i = settleOrder.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = settleOrder[i]; settleOrder[i] = settleOrder[j]; settleOrder[j] = tmp;
+      }
+      const allVisibleAt = order.length * APPEAR_STEP + PAUSE_BETWEEN;
+      settleOrder.forEach((span, n) => {
+        setTimeout(() => {
+          span.style.transform = 'translate(0, 0) rotate(' + span.dataset.rot + 'deg)';
+        }, allVisibleAt + n * SETTLE_STEP);
+      });
+
+      // Phase 3: snap to upright (rotation 0°) at staggered times
+      const allSettledAt = allVisibleAt + settleOrder.length * SETTLE_STEP + PAUSE_BETWEEN;
+      letters.forEach((span) => {
+        const t = allSettledAt + Math.random() * ROTATE_WINDOW;
+        setTimeout(() => {
+          span.style.transform = 'translate(0, 0) rotate(0deg)';
+        }, t);
+      });
+    })();
 
     // ── DETERMINE CURRENT
     const currentIdx = getCurrentIndex();
