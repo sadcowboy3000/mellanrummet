@@ -276,7 +276,7 @@
     }
 
     .current-section .section-label {
-      font-size: clamp(56px, 16vw, 96px);
+      font-size: clamp(42px, 11vw, 68px);
       font-weight: 400;
       line-height: 1;
       letter-spacing: -0.02em;
@@ -302,12 +302,14 @@
     }
 
     .artist-name {
-      text-align: center;
       font-family: var(--sans);
-      font-size: clamp(48px, 14vw, 72px);
+      font-size: clamp(46px, 13vw, 68px);
       font-weight: 300;
-      line-height: 1.05;
-      margin-bottom: 0.4rem;
+      line-height: 1.0;
+      letter-spacing: -0.025em;
+      color: var(--black);
+      margin-bottom: 0.5rem;
+      text-align: center;
     }
 
     .artist-handle {
@@ -1238,7 +1240,19 @@
     // 2) Once all are visible, each snaps into its place in the word —
     //    most letters straighten in the same step, but ~40% land still
     //    rotated and then snap to 0° a beat later.
-    function animateLetters(selector) {
+    function animateLetters(selector, opts) {
+      const o = Object.assign({
+        appearStep:      140,
+        settleStep:      180,
+        pauseBetween:    400,
+        twoStepRatio:    0.4,
+        rotateDelayMin:  250,
+        rotateDelayMax:  850,
+        scatterX:        70,
+        scatterY:        50,
+        showInitially:   false
+      }, opts || {});
+
       const el = document.querySelector(selector);
       if (!el) return;
       const text = el.textContent;
@@ -1253,35 +1267,29 @@
         span.textContent = ch === ' ' ? ' ' : ch;
         // Random initial offset within the viewport (no rotation, no fade).
         // Tune the multipliers to make letters scatter further or stay tighter.
-        const dx = (Math.random() - 0.5) * 70; // ±35vw
-        const dy = (Math.random() - 0.5) * 50; // ±25vh
+        const dx = (Math.random() - 0.5) * o.scatterX;
+        const dy = (Math.random() - 0.5) * o.scatterY;
         const rot = [0, 90, 180][Math.floor(Math.random() * 3)];
         span.dataset.rot = rot;
         span.style.transform = 'translate(' + dx + 'vw, ' + dy + 'vh) rotate(' + rot + 'deg)';
-        span.style.opacity = '0';
+        if (!o.showInitially) span.style.opacity = '0';
         el.appendChild(span);
         letters.push(span);
       }
 
-      // Shuffle a copy of `letters` so they appear in random order.
-      const order = letters.slice();
-      for (let i = order.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+      // Phase 1: appear one at a time at random positions (skipped if showInitially)
+      let allVisibleAt = 0;
+      if (!o.showInitially) {
+        const order = letters.slice();
+        for (let i = order.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+        }
+        order.forEach((span, n) => {
+          setTimeout(() => { span.style.opacity = '1'; }, n * o.appearStep);
+        });
+        allVisibleAt = order.length * o.appearStep + o.pauseBetween;
       }
-
-      // Tune the rhythm here:
-      const APPEAR_STEP    = 140; // ms between each letter becoming visible
-      const SETTLE_STEP    = 180; // ms between each letter snapping into place
-      const PAUSE_BETWEEN  = 400; // pause between phases
-      const TWO_STEP_RATIO = 0.4; // fraction of letters that land still rotated
-      const ROTATE_DELAY_MIN = 250; // ms before a two-step letter snaps to 0°
-      const ROTATE_DELAY_MAX = 850;
-
-      // Phase 1: appear one at a time at random positions (random rotation)
-      order.forEach((span, n) => {
-        setTimeout(() => { span.style.opacity = '1'; }, n * APPEAR_STEP);
-      });
 
       // Phase 2: snap to position, one letter at a time in a fresh random order.
       // Some letters land already upright; some land rotated and snap to 0° later.
@@ -1290,22 +1298,18 @@
         const j = Math.floor(Math.random() * (i + 1));
         const tmp = settleOrder[i]; settleOrder[i] = settleOrder[j]; settleOrder[j] = tmp;
       }
-      const allVisibleAt = order.length * APPEAR_STEP + PAUSE_BETWEEN;
       settleOrder.forEach((span, n) => {
-        const settleAt = allVisibleAt + n * SETTLE_STEP;
-        const stayRotated = span.dataset.rot !== '0' && Math.random() < TWO_STEP_RATIO;
+        const settleAt = allVisibleAt + n * o.settleStep;
+        const stayRotated = span.dataset.rot !== '0' && Math.random() < o.twoStepRatio;
         if (stayRotated) {
-          // Land in place still rotated...
           setTimeout(() => {
             span.style.transform = 'translate(0, 0) rotate(' + span.dataset.rot + 'deg)';
           }, settleAt);
-          // ...then snap upright a beat later.
-          const rotateAt = settleAt + ROTATE_DELAY_MIN + Math.random() * (ROTATE_DELAY_MAX - ROTATE_DELAY_MIN);
+          const rotateAt = settleAt + o.rotateDelayMin + Math.random() * (o.rotateDelayMax - o.rotateDelayMin);
           setTimeout(() => {
             span.style.transform = 'translate(0, 0) rotate(0deg)';
           }, rotateAt);
         } else {
-          // Land in place and upright in one step.
           setTimeout(() => {
             span.style.transform = 'translate(0, 0) rotate(0deg)';
           }, settleAt);
@@ -1315,6 +1319,33 @@
 
     animateLetters('.landing-headline');
     animateLetters('.landing-date');
+
+    // Fast preset for the current artist block — no fade-in, ~3× quicker.
+    const FAST_LETTER_OPTS = {
+      settleStep:     60,
+      twoStepRatio:   0.4,
+      rotateDelayMin: 100,
+      rotateDelayMax: 350,
+      scatterX:       30,
+      scatterY:       20,
+      showInitially:  true
+    };
+
+    // Trigger the current-section letter animation when block 2 scrolls into view.
+    (function setupCurrentAnimation() {
+      const target = document.getElementById('current');
+      if (!target || !('IntersectionObserver' in window)) return;
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animateLetters('#currentLabel', FAST_LETTER_OPTS);
+            animateLetters('#currentName', FAST_LETTER_OPTS);
+            observer.disconnect();
+          }
+        });
+      }, { threshold: 0.3 });
+      observer.observe(target);
+    })();
 
     // Reveal the rest of the page right as the last letter finishes settling.
     // For "Mellanrummet" (12 chars) the headline animation ends at roughly:
