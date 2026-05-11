@@ -32,6 +32,8 @@
     html {
       scroll-behavior: smooth;
       -webkit-text-size-adjust: 100%;
+      /* keep anchor jumps clear of the fixed nav-bar */
+      scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 3.5rem);
     }
 
     body {
@@ -88,10 +90,11 @@
       padding: 1rem 1rem;
       display: grid;
       grid-template-rows: auto 1fr;
-      flex: 1;
+      min-height: calc(100dvh - 86px);
     }
 
     .landing-main {
+      grid-row: 2;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -105,10 +108,16 @@
     }
 
     .nav-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      padding: calc(env(safe-area-inset-top, 0px) + 1rem) 1rem 1rem;
+      background: var(--white);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0;
       font-size: 16px;
     }
 
@@ -752,6 +761,32 @@
       width: 100%;
     }
 
+    /* On wider screens, lay Schema and Om side by side */
+    @media (min-width: 768px) {
+      .schedule-block {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 4rem;
+        padding: 4rem 2rem 6rem;
+      }
+
+      .schedule-section,
+      .about-section {
+        flex: 1 1 0;
+        max-width: 480px;
+      }
+
+      /* Match the about column's text alignment to the schedule column */
+      .about-section .about-text,
+      .about-section .sub-about,
+      .about-section .about-meta {
+        text-align: left;
+        margin-left: 0;
+        margin-right: 0;
+      }
+    }
+
     .schedule-list {
       display: flex;
       flex-direction: column;
@@ -858,13 +893,15 @@
 </head>
 <body>
 
+  <!-- Persistent top nav (fixed across all blocks) -->
+  <div class="nav-bar">
+    <span class="nav-wordmark">Åsögatan 122</span>
+    <span class="nav-date" id="navDate"></span>
+  </div>
+
   <!-- ── BLOCK 1 · LANDING ── -->
   <section class="block landing" id="top">
     <div class="landing-top">
-      <div class="nav-bar">
-        <span class="nav-wordmark">Åsögatan 122</span>
-        <span class="nav-date" id="navDate"></span>
-      </div>
       <div class="landing-main">
         <p class="landing-date">20.5–12.6</p>
         <h1 class="landing-headline">Mellanrummet</h1>
