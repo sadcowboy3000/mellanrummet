@@ -303,13 +303,14 @@
 
     .artist-name {
       font-family: var(--sans);
-      font-size: clamp(46px, 13vw, 68px);
+      font-size: clamp(28px, 13vw, 68px);
       font-weight: 300;
       line-height: 1.0;
       letter-spacing: -0.025em;
       color: var(--black);
       margin-bottom: 0.5rem;
       text-align: center;
+      white-space: nowrap;
     }
 
     .artist-handle {
@@ -696,7 +697,10 @@
       font-weight: 300;
       line-height: 1.05;
       text-align: center;
-      margin-bottom: 0.4rem;
+      margin: 0 auto 0.4rem;
+      display: block;
+      width: 100%;
+      white-space: nowrap;
     }
 
     .modal-handle {
@@ -765,7 +769,7 @@
     /* ── SCHEDULE + ABOUT BLOCK ── */
     .schedule-block {
       justify-content: center;
-      padding: 3rem 1.5rem 5.5rem;
+      padding: 2rem 1.5rem 5.5rem;
       gap: 3rem;
     }
 
@@ -810,8 +814,15 @@
       display: flex;
       justify-content: space-between;
       align-items: baseline;
+      gap: 1rem;
       padding: 10px 0;
       cursor: pointer;
+    }
+
+    .schedule-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
     .schedule-date {
@@ -821,11 +832,21 @@
       color: var(--gray-500);
     }
 
+    .schedule-vernissage {
+      font-family: var(--sans);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gray-500);
+    }
+
     .schedule-name {
       font-family: var(--sans);
       font-size: 14px;
       font-weight: 400;
       color: var(--black);
+      text-align: right;
+      white-space: nowrap;
     }
 
     .schedule-item.past {
@@ -931,6 +952,7 @@
   <!-- Persistent top nav (fixed across all blocks) -->
   <div class="nav-bar">
     <span class="nav-wordmark">Åsögatan 122</span>
+    <span class="nav-wordmark">Galleri Glommen</span>
     <span class="nav-date" id="navDate"></span>
   </div>
 
@@ -938,12 +960,12 @@
   <section class="block landing" id="top">
     <div class="landing-top">
       <div class="landing-main">
-        <p class="landing-date">20.5–12.6</p>
+        <p class="landing-date">20.5–8.6</p>
         <h1 class="landing-headline">I Mellanrummet</h1>
         <h2 class="landing-subheadline">In the space between</h2>
         <p class="landing-bio">
-        Tio konstnärer. En vägg. Tre veckor. Varje konstnär svarar på den föregåendes verk. /
-        <em>Ten artists. One wall. Three weeks. Each responds to the previous.</em>
+        I Mellanrummet samlar 10 konstnärer som genom sina unika ingrepp utforskar det kollektiva skapandets kraft. Följ processen på plats på Åsögatan 122, där fönstret byter skepnad var 48:e timme fram till den slutgiltiga installationen den 7 juni.
+       <!-- <em>Ten artists. One wall. Three weeks. Each responds to the previous.</em>-->
       </p>
       </div>
 
@@ -1093,96 +1115,107 @@
     ═══════════════════════════════════════════════ */
     const ARTISTS = [
       {
-        name: "Hanna Berg",
-        handle: "@hannaberg",
-        bio: "Hanna Berg arbetar med oljemåleri och lager av transparenta material. Hennes verk undersöker hur ljus och tid förändrar ytan. / Hanna Berg works with oil painting and layers of transparent material, exploring how light and time alter the surface.",
+        name: "Hedvig Bergman",
+        handle: "@hedvigbergman",
+        bio: "Hedvig Bergman har en examen i fri konst från Konstfack 2024. I hennes praktik möts ofta materialiteter och produktioner – hur produktionsprocesser skapar de material som vi använder oss av i olika hantverk. Bergman bidrar till Mellanrummet med ett verk som innefattar tagel och historier om borstbinderi. / Hedvig Bergman holds a BFA from Konstfack (2024). Her practice brings together materialities and production, examining how production processes shape the materials used in different crafts. For Mellanrummet she contributes a work involving horsehair and stories from the craft of brushmaking.",
         remixOf: null,
         remixDesc: null,
-        start: "2025-06-01",
+        start: "2026-05-20",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
-        name: "Pär Nilsson",
-        handle: "@parnilsson",
-        bio: "Pär Nilsson kombinerar analoga och digitala tekniker i collage som rör sig mellan det personliga och det politiska. / Pär Nilsson combines analogue and digital techniques in collages that move between the personal and the political.",
-        remixOf: "Hanna Berg",
-        remixDesc: "layered oil surfaces",
-        start: "2025-06-03",
+        name: "Theodore Trottner",
+        handle: "@theodoretrottner",
+        bio: "Theodore Trottner (b. 1986) arbetar primärt med ljud och har en masterexamen i ljudkonst från Stockholms konstnärliga högskola samt en master i fri konst från Kungl. Konsthögskolan i Stockholm. Trottner arbetar ofta med taktila ljud, och ljudperformance har de senaste åren dominerat hans praktik. I Mellanrummet bidrar Trottner med en ljudinstallation som aktiveras av övriga konstnärer såväl som besökare. / Theodore Trottner (b. 1986) works primarily with sound and holds an MFA in sound art from Stockholm University of the Arts as well as an MFA in fine art from the Royal Institute of Art, Stockholm. He often works with tactile sound, and sound performance has dominated his practice in recent years. For Mellanrummet he contributes a sound installation activated by the other artists as well as by visitors.",
+        remixOf: "Hedvig Bergman",
+        remixDesc: "horsehair and stories of brushmaking",
+        start: "2026-05-22",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
-        name: "Amina Yusuf",
-        handle: "@aminayusuf",
-        bio: "Amina Yusuf arbetar med textil och broderi som verktyg för att berätta om diaspora och tillhörighet. / Amina Yusuf uses textile and embroidery as tools for narrating diaspora and belonging.",
-        remixOf: "Pär Nilsson",
-        remixDesc: "analogue collage fragments",
-        start: "2025-06-05",
+        name: "Maneka Ghosh",
+        handle: "@manekaghosh",
+        bio: "Maneka Ghosh arbetar med textil och går nu sitt andra år på Handarbetets vänner. Hennes praktik formas genom väven och hur återvunna material kan skapa knutar som bidrar till en paus. I Mellanrummet bidrar Ghosh med textila verk och uttryck utifrån en efterlängtad paus, med ursprung i en vävd pausnot. / Maneka Ghosh works with textile and is currently in her second year at Handarbetets vänner. Her practice is shaped through weaving and how recycled materials can form knots that offer a pause. For Mellanrummet she contributes textile works and expressions departing from a long-awaited pause, rooted in a woven rest-note.",
+        remixOf: "Theodore Trottner",
+        remixDesc: "tactile sound activated by visitors",
+        start: "2026-05-24",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
-        name: "Markus Ek",
-        handle: "@markusek",
-        bio: "Markus Ek använder hittade industrimaterial och grafitavgjutningar för att skapa skulpturala installationer. / Markus Ek uses found industrial materials and graphite rubbings to create sculptural installations.",
-        remixOf: "Amina Yusuf",
-        remixDesc: "textile and thread structures",
-        start: "2025-06-07",
+        name: "Lior Nønne Malue Hansen",
+        handle: "@liornonnemaluehansen",
+        bio: "Lior Nønne Malue Hansen har en masterexamen i fri konst från Kungl. Konsthögskolan i Stockholm och arbetar primärt med installationer som berör platsen och tiden där verket befinner sig. Med en lätt hand närmar sig Hansen materialiteter som ofta tolkas som hårda eller svåra att förändra. Hennes bildspråk tolkar omgivning, tid och tillfälle på ett taktilt sätt där besökaren får utrymme att läsa in och tolka verket. Hansen är aktiv i Korvfabriken i Stockholm och kommer till Mellanrummet bidra med en installation baserad på de material som finns i galleriets omgivning. / Lior Nønne Malue Hansen holds an MFA in fine art from the Royal Institute of Art, Stockholm, and works primarily with installations that engage with the place and time the work inhabits. With a light hand, Hansen approaches materialities often read as hard or difficult to alter. Her visual language interprets surroundings, time, and occasion in a tactile way that invites the visitor to read and interpret the work. Hansen is active at Korvfabriken in Stockholm and contributes to Mellanrummet with an installation based on materials found in the gallery's surroundings.",
+        remixOf: "Maneka Ghosh",
+        remixDesc: "woven textiles and rest-notes",
+        start: "2026-05-26",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
-        name: "Sofia Lindqvist",
-        handle: "@sofialindqvist",
-        bio: "Sofia Lindqvist arbetar med collage och textil, ofta i dialog med minne och plats. / Sofia Lindqvist works with collage and textile, frequently in dialogue with memory and place.",
-        remixOf: "Markus Ek",
-        remixDesc: "steel found objects & graphite rubbings",
-        start: "2025-06-09",
+        name: "Indigo Booz",
+        handle: "@indigobooz",
+        bio: "Indigo Booz arbetar med måleri och installation där ramen ofta står i fokus. Booz har en kandidatexamen i fri konst från Konstfack och ifrågasätter genom sitt konstnärskap vem som får synas i den offentliga bilden och hur en porträtteras. Booz bidrar till Mellanrummet med ett platsbundet måleri där tavlan uppstår under installationen och därmed också skapar ett deltagande från omgivningen och besökare. / Indigo Booz works with painting and installation, with the frame often in focus. Booz holds a BFA in fine art from Konstfack and questions through her practice who gets to be seen in the public image and how one is portrayed. She contributes to Mellanrummet with an on-site painting where the work emerges during the installation, opening up participation from the surroundings and visitors.",
+        remixOf: "Lior Nønne Malue Hansen",
+        remixDesc: "site-responsive installation from neighbourhood materials",
+        start: "2026-05-28",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
-        name: "Lena Ström",
-        handle: "@lenastrom",
-        bio: "Lena Ström undersöker gränsen mellan fotografi och måleri genom kemiska processer direkt på pappret. / Lena Ström investigates the boundary between photography and painting through chemical processes directly on paper.",
-        remixOf: "Sofia Lindqvist",
-        remixDesc: "collage and layered textiles",
-        start: "2025-06-11",
+        name: "Eric Sundevåg",
+        handle: "@ericsundevag",
+        bio: "Eric Sundevåg har en kandidatexamen i fotografi från Akademin Valand och arbetar ofta med fotografi utifrån en bredare blick på vad mediet kan vara och hur det kan presenteras. I Mellanrummet bidrar Sundevåg med en installation av hår som är hans eget från en period under Covid-19-pandemin, då idén kläcktes. / Eric Sundevåg holds a BFA in photography from Akademin Valand and often approaches photography with a broader view of what the medium can be and how it can be presented. For Mellanrummet he contributes an installation made of his own hair from a period during the Covid-19 pandemic, when the idea first emerged.",
+        remixOf: "Indigo Booz",
+        remixDesc: "on-site painting and public portraiture",
+        start: "2026-05-30",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
-        name: "Dani Osei",
-        handle: "@daniosei",
-        bio: "Dani Osei arbetar med mönster och repetition inspirerade av västafrikanska vävsträckor och digital kod. / Dani Osei works with pattern and repetition inspired by West African weave structures and digital code.",
-        remixOf: "Lena Ström",
-        remixDesc: "chemical light impressions on paper",
-        start: "2025-06-13",
+        name: "Isa Robertini",
+        handle: "@isarobertini",
+        bio: "Isa Robertini (b. 1996) har en master i fri konst från Konsthögskolan i Wien och arbetar primärt med installation. Med pasta som utgångspunkt skapar Robertini i Mellanrummet en sardinsk-inspirerad pastainstallation, formad av hennes nuvarande residens på Sardinien. / Isa Robertini (b. 1996) holds an MFA in fine art from the Academy of Fine Arts Vienna and works primarily with installation. Taking pasta as her starting point, Robertini creates for Mellanrummet a Sardinian-inspired pasta installation, shaped by her current residency in Sardinia.",
+        remixOf: "Eric Sundevåg",
+        remixDesc: "photographic installation made of hair",
+        start: "2026-06-01",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
-        name: "Karin Björk",
-        handle: "@karinbjork",
-        bio: "Karin Björk skapar rumsliga installationer med papier-maché och gjutet lim. Hennes arbete kretsar kring bräcklighet och form. / Karin Björk creates spatial installations with papier-mâché and cast glue, centering her work on fragility and form.",
-        remixOf: "Dani Osei",
-        remixDesc: "woven pattern and grid structures",
-        start: "2025-06-15",
+        name: "Sara Darle Olsson",
+        handle: "@saradarleolsson",
+        bio: "Sara Darle Olsson är utbildad vid Rietveld Akademie i Amsterdam och arbetar ofta med befintliga material. / Sara Darle Olsson studied at the Rietveld Academie in Amsterdam and often works with existing materials.",
+        remixOf: "Isa Robertini",
+        remixDesc: "Sardinian-inspired pasta installation",
+        start: "2026-06-03",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
-        name: "Theo Mäkinen",
-        handle: "@theomakinen",
-        bio: "Theo Mäkinen kombinerar keramik och videoinstallation i verk som rör sig kring tid och återfall. / Theo Mäkinen combines ceramics and video installation in work that revolves around time and recurrence.",
-        remixOf: "Karin Björk",
-        remixDesc: "cast forms and paper structures",
-        start: "2025-06-17",
+        name: "Vincent Duraud",
+        handle: "@vincentduraud",
+        bio: "Vincent Duraud arbetar med installationer som ofta är lättföränderliga eller byggda av enklare material som även fungerar som täckande. / Vincent Duraud works with installations that are often easily transformable or built from simple materials that also function as cover.",
+        remixOf: "Sara Darle Olsson",
+        remixDesc: "found and existing materials",
+        start: "2026-06-05",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
-        name: "Ida Forsgren",
-        handle: "@idaforsgren",
-        bio: "Ida Forsgren arbetar i gränslandet mellan illustration och konceptkonst, med arkiv och minnesbilder som råmaterial. / Ida Forsgren works at the border of illustration and conceptual art, using archives and memory images as raw material.",
-        remixOf: "Theo Mäkinen",
-        remixDesc: "ceramic vessels and moving image",
-        start: "2025-06-19",
+        name: "Fältstudio",
+        handle: "@faltstudio",
+        bio: "FÄLTSTUDIO är ett arkitektkollektiv beläget söder om Stockholm. De arbetar gemensamt med konstinstallationer och arkitektoniska interventioner – senast med ett verk på Sergels torg inom Stockholm konsts satsning på Segelstorg. Till Mellanrummet arbetar de med spillmaterial från de övriga konstnärernas installationer för att avsluta processen. Gruppen består i dagsläget av 14 medlemmar och har kontor i Örnsbergs industriområde. / FÄLTSTUDIO is an architecture collective based south of Stockholm. They work collectively with art installations and architectural interventions — most recently at Sergels torg as part of Stockholm konst's Segelstorg initiative. For Mellanrummet they work with leftover materials from the other artists' installations to close the process. The group currently consists of 14 members and has its office in the Örnsberg industrial area.",
+        remixOf: "Vincent Duraud",
+        remixDesc: "ephemeral installation from simple covering materials",
+        start: "2026-06-07",
         images: { main: "", thumb1: "", thumb2: "" }
       }
     ];
+
+    // FINISSAGE — closing event. Appears as a card and as a schedule row,
+    // but is NOT considered a "current artist" (kept out of getCurrentIndex).
+    const FINISSAGE = {
+      name: "Finissage",
+      start: "2026-06-08",
+      dateLabel: "8.6",
+      vernissageLabel: "8.6 · Finissage 17–19",
+      bio: "17.00–19.00 – då blir det bubbel! Under finissagen river vi utställningen, det blir ett event där den sista handen är lagd på det gemensamma verket och verket blir både klart och tar slut vid tidpunkten. Klockan 19.00 är verket inte längre en installation av 10 konstnärer utan en plats för reflektion av vad som skett och vad som komma skall. Av och med Curator Linnea Wästfelt. / 17.00–19.00 – bubbles will be served! During the finissage we dismantle the exhibition — an event where the final touch is added to the collective work, which becomes both complete and finished at the same moment. At 19.00 the work is no longer an installation by 10 artists but a place for reflection on what has happened and what is to come. By and with Curator Linnea Wästfelt.",
+      isFinissage: true
+    };
 
     /* ══════════════════════════════════════════════
        LOGIC — no editing needed below this line
@@ -1215,10 +1248,6 @@
     }
 
     function getCurrentIndex() {
-      // ⚠ Temporary override: force the first artist as the current one.
-      // Delete this `return 0` line to restore the date-based logic below.
-      return 0;
-
       const t = today();
       for (let i = 0; i < ARTISTS.length; i++) {
         const s = parseDate(ARTISTS[i].start);
@@ -1242,12 +1271,12 @@
     //    rotated and then snap to 0° a beat later.
     function animateLetters(selector, opts) {
       const o = Object.assign({
-        appearStep:      140,
-        settleStep:      180,
-        pauseBetween:    400,
+        appearStep:      60,
+        settleStep:      80,
+        pauseBetween:    150,
         twoStepRatio:    0.4,
-        rotateDelayMin:  250,
-        rotateDelayMax:  850,
+        rotateDelayMin:  100,
+        rotateDelayMax:  350,
         scatterX:        70,
         scatterY:        50,
         showInitially:   false
@@ -1352,7 +1381,7 @@
     //   12 * APPEAR_STEP (1680) + PAUSE_BETWEEN (400) + 11 * SETTLE_STEP (1980)
     //   + ROTATE_DELAY_MAX (850 worst-case for two-step) ≈ 4910 ms
     // Adjust this value if you change those constants.
-    setTimeout(() => { document.body.classList.add('ready'); }, 4900);
+    setTimeout(() => { document.body.classList.add('ready'); }, 2400);
 
     // ── DETERMINE CURRENT
     const currentIdx = getCurrentIndex();
@@ -1373,54 +1402,110 @@
     document.getElementById('currentBio').textContent = currentBioParts.sv;
     document.getElementById('currentBioEn').textContent = currentBioParts.en;
 
-    // ── BUILD GALLERY CARD
-    function buildCard(artist, idx, type) {
+    // Find the LARGEST font-size in [minSize, maxSize] that lets the element's
+    // text fit on one line within the viewport (so on mobile the name reaches
+    // edge-to-edge minus a small side margin). `maxSize` caps growth on
+    // desktop — defaulted to match the landing headline's max (68px).
+    function fitTextWidth(el, paddingX, maxSize, minSize) {
+      if (!el) return;
+      if (paddingX == null) paddingX = 32; // ~16px gap from each viewport edge
+      if (maxSize == null) maxSize = 68;   // matches landing headline max
+      if (minSize == null) minSize = 12;
+      el.style.fontSize = '';
+      // Take the smaller of the two viewport readings — they can disagree
+      // slightly on mobile (iOS Safari URL bar, scrollbar, etc.).
+      const vw = Math.min(
+        window.innerWidth || 99999,
+        document.documentElement.clientWidth || 99999
+      );
+      const maxWidth = vw - paddingX;
+      if (maxWidth <= 0) return;
+
+      // Binary search. `+ 2` is a sub-pixel safety buffer (scrollWidth is
+      // rounded to an integer and rendered text can be marginally wider).
+      let lo = minSize, hi = maxSize, best = minSize;
+      while (lo <= hi) {
+        const mid = Math.floor((lo + hi) / 2);
+        el.style.fontSize = mid + 'px';
+        if (el.scrollWidth + 2 <= maxWidth) {
+          best = mid;
+          lo = mid + 1;
+        } else {
+          hi = mid - 1;
+        }
+      }
+      el.style.fontSize = best + 'px';
+    }
+
+    const currentNameEl = document.getElementById('currentName');
+    fitTextWidth(currentNameEl);
+    window.addEventListener('resize', () => fitTextWidth(currentNameEl));
+    // Web fonts (Open Sans) load asynchronously — their metrics differ from
+    // the fallback font, so re-fit once they're ready to avoid overflow.
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => fitTextWidth(currentNameEl));
+    }
+
+    // ── BUILD GALLERY CARD (handles both artists and the FINISSAGE event)
+    function buildCard(item, idx, type) {
       const card = document.createElement('div');
       card.className = 'gallery-card' + (type === 'past' ? ' past' : '');
+      if (item.isFinissage) card.classList.add('finissage-card');
       card.setAttribute('role', 'button');
       card.setAttribute('tabindex', '0');
-      card.setAttribute('aria-label', 'View ' + artist.name);
+      card.setAttribute('aria-label', 'View ' + item.name);
 
-      const slotNum = ARTISTS.indexOf(artist) + 1;
-      const dateRange = formatDateRange(artist.start);
+      const slotNum = ARTISTS.indexOf(item) + 1; // 0 for FINISSAGE (not in ARTISTS)
+      const dateText = item.dateLabel || formatDateRange(item.start);
+      const cardLabel = item.isFinissage
+        ? 'Event'
+        : 'Artist ' + String(slotNum).padStart(2, '0');
 
       let tagText = '';
       if (type === 'upcoming') {
-        const daysUntil = daysBetween(today(), parseDate(artist.start));
-        tagText = daysUntil === 1 ? 'Tomorrow' : 'In ' + daysUntil + ' days';
+        const daysUntil = daysBetween(today(), parseDate(item.start));
+        tagText = daysUntil === 0 ? 'Today'
+                : daysUntil === 1 ? 'Tomorrow'
+                : 'In ' + daysUntil + ' days';
       } else {
         tagText = 'Completed';
       }
 
       card.innerHTML =
         '<div class="card-body">' +
-          '<p class="card-number">Artist ' + String(slotNum).padStart(2,'0') + '</p>' +
-          '<p class="card-name">' + artist.name + '</p>' +
-          '<p class="card-date">' + dateRange + '</p>' +
+          '<p class="card-number">' + cardLabel + '</p>' +
+          '<p class="card-name">' + item.name + '</p>' +
+          '<p class="card-date">' + dateText + '</p>' +
           '<span class="card-tag">' + tagText + '</span>' +
         '</div>';
 
-      card.addEventListener('click', () => openModal(artist, slotNum));
-      card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openModal(artist, slotNum); });
+      card.addEventListener('click', () => openModal(item, slotNum));
+      card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openModal(item, slotNum); });
       return card;
     }
 
+    // Decide whether the FINISSAGE belongs in upcoming or previous, based on date.
+    const finissageDate = parseDate(FINISSAGE.start);
+    const finissageIsPast = today() >= finissageDate;
+    const upcomingItems = finissageIsPast ? upcoming.slice() : upcoming.concat([FINISSAGE]);
+    const previousItems = finissageIsPast ? [FINISSAGE].concat(previous) : previous.slice();
+
     // ── UPCOMING
     const upcomingScroll = document.getElementById('upcomingScroll');
-    document.getElementById('upcomingCount').textContent = upcoming.length + ' artists';
-    if (upcoming.length === 0) {
+    document.getElementById('upcomingCount').textContent = upcomingItems.length + ' items';
+    if (upcomingItems.length === 0) {
       upcomingScroll.innerHTML = '<p class="gallery-empty">Inga kommande</p>';
     } else {
-      upcoming.forEach((a, i) => upcomingScroll.appendChild(buildCard(a, i, 'upcoming')));
+      upcomingItems.forEach((a, i) => upcomingScroll.appendChild(buildCard(a, i, 'upcoming')));
     }
 
     // ── PREVIOUS
     const previousScroll = document.getElementById('previousScroll');
-    document.getElementById('previousCount').textContent = previous.length + ' artists';
-    if (previous.length === 0) {
+    document.getElementById('previousCount').textContent = previousItems.length + ' items';
+    if (previousItems.length === 0) {
       previousScroll.innerHTML = '<p class="gallery-empty">Inga tidigare</p>';
     } else {
-      previous.forEach((a, i) => previousScroll.appendChild(buildCard(a, i, 'past')));
+      previousItems.forEach((a, i) => previousScroll.appendChild(buildCard(a, i, 'past')));
     }
 
     // ── SCHEDULE LIST
@@ -1431,20 +1516,42 @@
       if (i < currentIdx) cls += ' past';
       else if (i === currentIdx) cls += ' current';
       row.className = cls;
+      const d = parseDate(a.start);
+      const firstDate = d.getDate() + '.' + (d.getMonth() + 1);
       row.innerHTML =
-        '<span class="schedule-date">' + formatDateRange(a.start) + '</span>' +
+        '<div class="schedule-meta">' +
+          '<span class="schedule-date">' + formatDateRange(a.start) + '</span>' +
+          '<span class="schedule-vernissage">' + firstDate + ' · Vernissage 17–19</span>' +
+        '</div>' +
         '<span class="schedule-name">' + a.name + '</span>';
       row.addEventListener('click', () => openModal(a, i + 1));
       scheduleList.appendChild(row);
     });
+
+    // Append the FINISSAGE row at the end of the schedule.
+    (function addFinissageRow() {
+      const row = document.createElement('div');
+      row.className = 'schedule-item schedule-finissage';
+      row.innerHTML =
+        '<div class="schedule-meta">' +
+          '<span class="schedule-date">' + FINISSAGE.dateLabel + '</span>' +
+          '<span class="schedule-vernissage">' + FINISSAGE.vernissageLabel + '</span>' +
+        '</div>' +
+        '<span class="schedule-name">' + FINISSAGE.name + '</span>';
+      row.addEventListener('click', () => openModal(FINISSAGE, 0));
+      scheduleList.appendChild(row);
+    })();
 
     // ── MODAL
     const overlay = document.getElementById('modalOverlay');
     const sheet   = document.getElementById('modalSheet');
 
     function openModal(artist, slotNum) {
-      document.getElementById('modalDates').textContent = formatDateRange(artist.start);
-      document.getElementById('modalName').textContent = artist.name;
+      // FINISSAGE has its own `dateLabel` ("8.6"); artists use the slot range.
+      document.getElementById('modalDates').textContent =
+        artist.dateLabel || formatDateRange(artist.start);
+      const modalNameEl = document.getElementById('modalName');
+      modalNameEl.textContent = artist.name;
       const modalBioParts = splitBio(artist.bio);
       document.getElementById('modalBio').textContent = modalBioParts.sv;
       document.getElementById('modalBioEn').textContent = modalBioParts.en;
@@ -1452,6 +1559,14 @@
       sheet.scrollTop = 0;
       overlay.classList.add('open');
       document.body.style.overflow = 'hidden';
+      // Fit the modal name once layout is settled. Uses the same rule as the
+      // current-section name — grows edge-to-edge of the viewport.
+      requestAnimationFrame(() => fitTextWidth(modalNameEl));
+      // Re-fit when fonts are ready in case the modal opened before the web
+      // font finished loading.
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => fitTextWidth(modalNameEl));
+      }
     }
 
     function closeModal() {
