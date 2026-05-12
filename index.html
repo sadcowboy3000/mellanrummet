@@ -1482,14 +1482,52 @@
       sheet.scrollTop = 0;
       overlay.classList.add('open');
       document.body.style.overflow = 'hidden';
-      // Fit the modal name once layout is settled. Uses the same rule as the
-      // current-section name — grows edge-to-edge of the viewport.
-      requestAnimationFrame(() => fitTextWidth(modalNameEl));
-      // Re-fit when fonts are ready in case the modal opened before the web
-      // font finished loading.
+      // Fit the modal name and then align the bio block to where the centered
+      // name visually starts (desktop only).
+      requestAnimationFrame(() => {
+        fitTextWidth(modalNameEl);
+        alignBioToName();
+      });
       if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(() => fitTextWidth(modalNameEl));
+        document.fonts.ready.then(() => {
+          fitTextWidth(modalNameEl);
+          alignBioToName();
+        });
       }
+    }
+
+    // On desktop, align the bio block's left edge with the centered name's
+    // visual left edge. On mobile, clear any inline styles so it falls back
+    // to the default CSS (left-aligned at modal-inner padding).
+    function alignBioToName() {
+      const modalBio   = document.getElementById('modalBio');
+      const modalBioEn = document.getElementById('modalBioEn');
+      const reset = (el) => {
+        if (!el) return;
+        el.style.maxWidth   = '';
+        el.style.marginLeft = '';
+        el.style.marginRight = '';
+      };
+      if (!modalBio) return;
+      if (window.innerWidth < 768) {
+        reset(modalBio);
+        reset(modalBioEn);
+        return;
+      }
+      const modalName = document.getElementById('modalName');
+      if (!modalName) return;
+      const nameWidth = modalName.scrollWidth;
+      if (nameWidth <= 0) return;
+      // Floor at 400px so very short names don't squeeze the bio too narrow.
+      const targetWidth = Math.max(nameWidth, 400);
+      const apply = (el) => {
+        if (!el) return;
+        el.style.maxWidth    = targetWidth + 'px';
+        el.style.marginLeft  = 'auto';
+        el.style.marginRight = 'auto';
+      };
+      apply(modalBio);
+      apply(modalBioEn);
     }
 
     function closeModal() {
