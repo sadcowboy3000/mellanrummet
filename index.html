@@ -679,7 +679,7 @@
 
     .modal-inner {
       padding: 2rem 1.5rem calc(env(safe-area-inset-bottom, 0px) + 2.5rem);
-      text-align: center;
+      text-align: left;
     }
 
     .modal-dates {
@@ -693,7 +693,7 @@
 
     .modal-name {
       font-family: var(--sans);
-      font-size: 30px;
+      font-size: 25px;
       font-weight: 300;
       line-height: 1.05;
       text-align: center;
@@ -708,7 +708,7 @@
       font-size: 11px;
       color: var(--gray-500);
       letter-spacing: 0.05em;
-      text-align: center;
+      text-align: left;
       margin-bottom: 1.75rem;
     }
 
@@ -717,9 +717,9 @@
       font-size: 15px;
       line-height: 1.8;
       color: var(--gray-700);
-      text-align: center;
+      text-align: left;
       max-width: 560px;
-      margin: 0 auto 0.5rem;
+      margin: 0 0 0.5rem;
     }
 
     .modal-bio-en {
@@ -729,9 +729,9 @@
       font-weight: 300;
       line-height: 1.8;
       color: #808080;
-      text-align: center;
+      text-align: left;
       max-width: 560px;
-      margin: 0 auto 1.25rem;
+      margin: 0 0 1.25rem;
     }
 
     .modal-remix {
@@ -804,6 +804,16 @@
       }
     }
 
+    .schedule-hint {
+      font-family: var(--sans);
+      font-size: 11px;
+      font-style: italic;
+      letter-spacing: 0.04em;
+      color: var(--gray-500);
+      margin-top: -1rem;
+      margin-bottom: 1rem;
+    }
+
     .schedule-list {
       display: flex;
       flex-direction: column;
@@ -867,7 +877,7 @@
       font-size: 15px;
       line-height: 1.8;
       color: var(--gray-700);
-      text-align: center;
+      text-align: left;
       max-width: 560px;
       margin: 0 auto 1.25rem;
     }
@@ -930,11 +940,13 @@
       /* Step-based: NO transition. Each state change snaps instantly. */
     }
 
-    /* ── INTRO: hide everything except nav-bar, headline, date until ready ── */
+    /* ── INTRO: hide intro elements until the headline animation finishes.
+       Block 2 (.current-section) is excluded so it's visible no matter when
+       you scroll to it. ── */
     .landing-subheadline,
     .landing-bio,
     .landing-bottom,
-    .block:not(.landing) {
+    .block:not(.landing):not(.current-section) {
       opacity: 0;
       transition: opacity 0.2s ease;
     }
@@ -942,7 +954,7 @@
     body.ready .landing-subheadline,
     body.ready .landing-bio,
     body.ready .landing-bottom,
-    body.ready .block:not(.landing) {
+    body.ready .block:not(.landing):not(.current-section) {
       opacity: 1;
     }
   </style>
@@ -1000,37 +1012,8 @@
       <p class="artist-bio-en" id="currentBioEn"></p>
     </div>
 
-    <a class="block-cue" href="#gallery">
-      <span>Tidigare &amp; kommande</span>
-      <div class="scroll-arrow">
-        <svg viewBox="0 0 12 12" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="6" y1="1" x2="6" y2="11"/><polyline points="2,7 6,11 10,7"/>
-        </svg>
-      </div>
-    </a>
-  </section>
-
-  <!-- ── BLOCK 3 · PREVIOUS + UPCOMING ── -->
-  <section class="block gallery-block" id="gallery">
-    <section class="gallery-section" id="previousSection">
-      <div class="gallery-header">
-        <p class="section-label">Tidigare &nbsp;·&nbsp; Previous</p>
-        <span class="gallery-count" id="previousCount"></span>
-      </div>
-      <div class="gallery-scroll" id="previousScroll"></div>
-    </section>
-
-    <section class="gallery-section" id="upcomingSection">
-      <div class="gallery-header">
-        <p class="section-label">Kommande &nbsp;·&nbsp; Upcoming</p>
-
-        <span class="gallery-count" id="upcomingCount"></span>
-      </div>
-      <div class="gallery-scroll" id="upcomingScroll"></div>
-    </section>
-
     <a class="block-cue" href="#info">
-      <span>Schema</span>
+      <span>Schema &amp; om</span>
       <div class="scroll-arrow">
         <svg viewBox="0 0 12 12" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="6" y1="1" x2="6" y2="11"/><polyline points="2,7 6,11 10,7"/>
@@ -1039,18 +1022,20 @@
     </a>
   </section>
 
-  <!-- ── BLOCK 4 · SCHEDULE + ABOUT ── -->
+  <!-- ── BLOCK 3 · SCHEDULE + ABOUT ── -->
   <section class="block schedule-block" id="info">
     <div class="schedule-section">
       <p class="section-label">Schema</p>
+      <p class="schedule-hint">Tryck för mer info</p>
       <div class="schedule-list" id="scheduleList"></div>
     </div>
 
     <div class="about-section">
-      <p class="section-label">Om</p>
+      <p class="section-label">Om projektet</p>
       <p class="about-text">
-        Mellanrummet är en utställning där tio konstnärer turas om att inta rummet. Varje konstnär svarar på den föregåendes verk, så utställningen förändras ständigt under tre veckor. /
-        <em>Mellanrummet is an exhibition where ten artists take turns inhabiting the space. Each responds to the previous artist's work, so the show is continuously becoming something new across three weeks.</em>
+        Vad händer med ett konstverk när det upphör att tillhöra en enskild individ och istället blir en del av ett gemensamt kretslopp? I en tid där konstscenen präglas av exklusivitet och mätbarhet, går projektet I Mellanrummet i motsatt riktning. Genom att hylla process framför slutprodukt och det kollektiva framför det privata, möjliggör vi en plats där kontrollen förflyttas som en stafettpinne mellan deltagande konstnärer. Här finns inget konstant; istället befinner sig utställningen i mellanrummet – i ett tillstånd av konstant förändring.
+        <br><br>Tio konstnärer är redo att delta i en kedjereaktion av skapande i ett kvadratmeterstort fönster på Södermalm. Varannan dag öppnas dörren för en ny konstnär som inte bara adderar, utan även transformerar föregående verk till sitt eget. På så vis skapas en ordlös ständigt pågående dialog. Det blir en övning i att släppa taget och låta verket leva sitt eget liv genom andras händer. 
+
       </p>
       <p class="sub-about">Kurerad av Linnea Wästfelt</p>
       <p class="about-meta">Hemsida av Linn Willebrand & Linnea Wästfelt 2026</p>
@@ -1409,7 +1394,7 @@
     function fitTextWidth(el, paddingX, maxSize, minSize) {
       if (!el) return;
       if (paddingX == null) paddingX = 32; // ~16px gap from each viewport edge
-      if (maxSize == null) maxSize = 68;   // matches landing headline max
+      if (maxSize == null) maxSize = 58;   // matches landing headline max
       if (minSize == null) minSize = 12;
       el.style.fontSize = '';
       // Take the smaller of the two viewport readings — they can disagree
@@ -1444,68 +1429,6 @@
     // the fallback font, so re-fit once they're ready to avoid overflow.
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => fitTextWidth(currentNameEl));
-    }
-
-    // ── BUILD GALLERY CARD (handles both artists and the FINISSAGE event)
-    function buildCard(item, idx, type) {
-      const card = document.createElement('div');
-      card.className = 'gallery-card' + (type === 'past' ? ' past' : '');
-      if (item.isFinissage) card.classList.add('finissage-card');
-      card.setAttribute('role', 'button');
-      card.setAttribute('tabindex', '0');
-      card.setAttribute('aria-label', 'View ' + item.name);
-
-      const slotNum = ARTISTS.indexOf(item) + 1; // 0 for FINISSAGE (not in ARTISTS)
-      const dateText = item.dateLabel || formatDateRange(item.start);
-      const cardLabel = item.isFinissage
-        ? 'Event'
-        : 'Artist ' + String(slotNum).padStart(2, '0');
-
-      let tagText = '';
-      if (type === 'upcoming') {
-        const daysUntil = daysBetween(today(), parseDate(item.start));
-        tagText = daysUntil === 0 ? 'Today'
-                : daysUntil === 1 ? 'Tomorrow'
-                : 'In ' + daysUntil + ' days';
-      } else {
-        tagText = 'Completed';
-      }
-
-      card.innerHTML =
-        '<div class="card-body">' +
-          '<p class="card-number">' + cardLabel + '</p>' +
-          '<p class="card-name">' + item.name + '</p>' +
-          '<p class="card-date">' + dateText + '</p>' +
-          '<span class="card-tag">' + tagText + '</span>' +
-        '</div>';
-
-      card.addEventListener('click', () => openModal(item, slotNum));
-      card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openModal(item, slotNum); });
-      return card;
-    }
-
-    // Decide whether the FINISSAGE belongs in upcoming or previous, based on date.
-    const finissageDate = parseDate(FINISSAGE.start);
-    const finissageIsPast = today() >= finissageDate;
-    const upcomingItems = finissageIsPast ? upcoming.slice() : upcoming.concat([FINISSAGE]);
-    const previousItems = finissageIsPast ? [FINISSAGE].concat(previous) : previous.slice();
-
-    // ── UPCOMING
-    const upcomingScroll = document.getElementById('upcomingScroll');
-    document.getElementById('upcomingCount').textContent = upcomingItems.length + ' items';
-    if (upcomingItems.length === 0) {
-      upcomingScroll.innerHTML = '<p class="gallery-empty">Inga kommande</p>';
-    } else {
-      upcomingItems.forEach((a, i) => upcomingScroll.appendChild(buildCard(a, i, 'upcoming')));
-    }
-
-    // ── PREVIOUS
-    const previousScroll = document.getElementById('previousScroll');
-    document.getElementById('previousCount').textContent = previousItems.length + ' items';
-    if (previousItems.length === 0) {
-      previousScroll.innerHTML = '<p class="gallery-empty">Inga tidigare</p>';
-    } else {
-      previousItems.forEach((a, i) => previousScroll.appendChild(buildCard(a, i, 'past')));
     }
 
     // ── SCHEDULE LIST
