@@ -270,9 +270,9 @@
       /* ↓ The LAST padding value controls how low the bio sits.
            Smaller value = bio sits CLOSER to the scroll cue.
            Don't go below ~3rem or it will collide with the scroll cue. */
-      padding: 2rem 1.5rem 4.5rem;
+      padding: 1.5rem 1.5rem 4.5rem;
       text-align: center;
-      gap: 1.5rem;
+      gap: 0rem;
     }
 
     .current-section .section-label {
@@ -308,7 +308,7 @@
       line-height: 1.0;
       letter-spacing: -0.025em;
       color: var(--black);
-      margin-bottom: 0.5rem;
+      margin-bottom: 2rem;
       text-align: center;
       white-space: nowrap;
     }
@@ -465,11 +465,11 @@
       font-size: 16px;
       font-style: italic;
       font-weight: 300;
-      line-height: 1.7;
+      line-height: 2;
       color: #808080;
       text-align: left;
       max-width: 560px;
-      margin: 0 auto 1.5rem;
+      margin: 1.5rem auto 1.5rem;
     }
 
     .remix-note {
@@ -719,15 +719,15 @@
       color: var(--gray-700);
       text-align: left;
       max-width: 560px;
-      margin: 0 0 0.5rem;
+      margin: 1rem 0 1rem;
     }
 
     .modal-bio-en {
       font-family: var(--sans);
-      font-size: 15px;
+      font-size: 13px;
       font-style: italic;
       font-weight: 300;
-      line-height: 1.8;
+      line-height: 2.2;
       color: #808080;
       text-align: left;
       max-width: 560px;
@@ -806,12 +806,30 @@
 
     .schedule-hint {
       font-family: var(--sans);
-      font-size: 11px;
+      font-size: 15px;
       font-style: italic;
       letter-spacing: 0.04em;
       color: var(--gray-500);
       margin-top: -1rem;
       margin-bottom: 1rem;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .schedule-hint-track {
+      display: inline-flex;
+      animation: schedule-hint-marquee 14s linear infinite;
+      /* hover to pause if you ever want it */
+    }
+
+    .schedule-hint-track > span {
+      flex-shrink: 0;
+      padding-right: 2em;
+    }
+
+    @keyframes schedule-hint-marquee {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
     }
 
     .schedule-list {
@@ -884,7 +902,7 @@
 
     .sub-about {
       font-family: var(--serif);
-      font-size: 20px;
+      font-size: 18px;
       line-height: 1.8;
       color: var(--gray-700);
       text-align: center;
@@ -957,9 +975,71 @@
     body.ready .block:not(.landing):not(.current-section) {
       opacity: 1;
     }
+
+    /* ── DEBUG PANEL (collapsible artist picker) ── */
+    .debug-panel {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 4rem);
+      right: 0.75rem;
+      z-index: 200;
+      background: var(--white);
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 11px;
+      max-width: 240px;
+      max-height: 70vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    .debug-toggle {
+      background: var(--black);
+      color: var(--white);
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .debug-content {
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow-y: auto;
+    }
+    .debug-panel.collapsed .debug-content { display: none; }
+    .debug-btn {
+      background: transparent;
+      border: none;
+      text-align: left;
+      padding: 6px 8px;
+      cursor: pointer;
+      border-radius: 4px;
+      font: inherit;
+      color: var(--gray-700);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .debug-btn:hover { background: var(--gray-100); }
+    .debug-btn.active {
+      background: var(--black);
+      color: var(--white);
+    }
   </style>
 </head>
 <body>
+
+  <!-- Debug panel (collapsible). Remove this whole <div> in production. -->
+  <div id="debugPanel" class="debug-panel collapsed">
+    <button class="debug-toggle" type="button">▸ Debug · välj konstnär</button>
+    <div class="debug-content"></div>
+  </div>
 
   <!-- Persistent top nav (fixed across all blocks) -->
   <div class="nav-bar">
@@ -1013,7 +1093,7 @@
     </div>
 
     <a class="block-cue" href="#info">
-      <span>Schema &amp; om</span>
+      <span>Schema</span>
       <div class="scroll-arrow">
         <svg viewBox="0 0 12 12" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="6" y1="1" x2="6" y2="11"/><polyline points="2,7 6,11 10,7"/>
@@ -1036,15 +1116,16 @@
         Vad händer med ett konstverk när det upphör att tillhöra en enskild individ och istället blir en del av ett gemensamt kretslopp? I en tid där konstscenen präglas av exklusivitet och mätbarhet, går projektet I Mellanrummet i motsatt riktning. Genom att hylla process framför slutprodukt och det kollektiva framför det privata, möjliggör vi en plats där kontrollen förflyttas som en stafettpinne mellan deltagande konstnärer. Här finns inget konstant; istället befinner sig utställningen i mellanrummet – i ett tillstånd av konstant förändring.
         <br><br>Tio konstnärer är redo att delta i en kedjereaktion av skapande i ett kvadratmeterstort fönster på Södermalm. Varannan dag öppnas dörren för en ny konstnär som inte bara adderar, utan även transformerar föregående verk till sitt eget. På så vis skapas en ordlös ständigt pågående dialog. Det blir en övning i att släppa taget och låta verket leva sitt eget liv genom andras händer. 
 
+
       </p>
-      <p class="sub-about">Kurerad av Linnea Wästfelt</p>
+      <p class="sub-about">Kurerad och på initiativ av Linnea Wästfelt</p>
       <p class="about-meta">Hemsida av Linn Willebrand & Linnea Wästfelt 2026</p>
     </div>
 
     <a class="block-cue" href="#top">
-      <div class="scroll-arrow" style="transform: rotate(180deg);">
+      <div class="scroll-arrow">
         <svg viewBox="0 0 12 12" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="6" y1="1" x2="6" y2="11"/><polyline points="2,7 6,11 10,7"/>
+          <line x1="6" y1="1" x2="6" y2="11"/><polyline points="2,5 6,1 10,5"/>
         </svg>
       </div>
       <span>Tillbaka till toppen</span>
@@ -1102,7 +1183,7 @@
       {
         name: "Hedvig Bergman",
         handle: "@hedvigbergman",
-        bio: "Hedvig Bergman har en examen i fri konst från Konstfack 2024. I hennes praktik möts ofta materialiteter och produktioner – hur produktionsprocesser skapar de material som vi använder oss av i olika hantverk. Bergman bidrar till Mellanrummet med ett verk som innefattar tagel och historier om borstbinderi. / Hedvig Bergman holds a BFA from Konstfack (2024). Her practice brings together materialities and production, examining how production processes shape the materials used in different crafts. For Mellanrummet she contributes a work involving horsehair and stories from the craft of brushmaking.",
+        bio: "Hedvig Bergman (f. 1988) har en masterexamen i fri konst från Konstfack. I sin praktik intresserar sig Bergman för material och de produktionsprocesser som formar dem. Genom text och video undersöker hon dessa förlopp, och hennes skulpturer uppstår ofta i relation till insamlat bildmaterial. I Bergmans praktik möts olika materialiteter och uttryck, i Mellanrummet bidrar hon med ett verk som kretsar kring just detta — materialens tillblivelse och hur materialitet kan träda i relation till andra praktiker i rummet. / Hedvig Bergman (b. 1988) holds a Master’s degree in Fine Arts from Konstfack. In her artistic practice, Bergman is interested in materials and the production processes that shape them. Through text and video, she explores these processes, and her sculptures often emerge in relation to collected visual material. Different materialities and forms of expression intersect in Bergman’s practice. In Mellanrummet, she contributes a work centered precisely on this — the formation of materials and how materiality can enter into dialogue with other practices within the space.",
         remixOf: null,
         remixDesc: null,
         start: "2026-05-20",
@@ -1111,7 +1192,7 @@
       {
         name: "Theodore Trottner",
         handle: "@theodoretrottner",
-        bio: "Theodore Trottner (b. 1986) arbetar primärt med ljud och har en masterexamen i ljudkonst från Stockholms konstnärliga högskola samt en master i fri konst från Kungl. Konsthögskolan i Stockholm. Trottner arbetar ofta med taktila ljud, och ljudperformance har de senaste åren dominerat hans praktik. I Mellanrummet bidrar Trottner med en ljudinstallation som aktiveras av övriga konstnärer såväl som besökare. / Theodore Trottner (b. 1986) works primarily with sound and holds an MFA in sound art from Stockholm University of the Arts as well as an MFA in fine art from the Royal Institute of Art, Stockholm. He often works with tactile sound, and sound performance has dominated his practice in recent years. For Mellanrummet he contributes a sound installation activated by the other artists as well as by visitors.",
+        bio: "Theodore Trottner (f. 1986) har en magisterexamen i ljudkonst från Stockholms konstnärliga högskola samt en masterexamen i fri konst från Kungl. Konsthögskolan i Stockholm. Trottner arbetar främst med installationer i olika former, där ljudet står i centrum. Hans praktik har under de senaste åren präglats av skapandet av ljudinstallationer och performativa verk som undersöker lyssnandets rumslighet och exklusivitet. I Mellanrummet bidrar Trottner med en ljudinstallation som aktiveras av såväl de övriga konstnärerna som besökare som går förbi fönstret. Genom en transducerhögtalare inkorporeras även själva fönsterrutan som ett instrument och en del av verkets ljudkropp. / Theodore Trottner (b. 1986) holds a Master’s degree in Sound Art from Stockholm University of the Arts as well as a Master’s degree in Fine Arts from Royal Institute of Art. Trottner primarily works with installations in various forms, with sound at the center of his practice. In recent years, his work has been characterized by the creation of sound installations and performative works that explore the spatiality and exclusivity of listening. In Mellanrummet, Trottner contributes a sound installation activated both by the other participating artists and by passersby outside the window. Through the use of a transducer speaker, the windowpane itself is incorporated as an instrument and as part of the sonic body of the work.",
         remixOf: "Hedvig Bergman",
         remixDesc: "horsehair and stories of brushmaking",
         start: "2026-05-22",
@@ -1120,7 +1201,7 @@
       {
         name: "Maneka Ghosh",
         handle: "@manekaghosh",
-        bio: "Maneka Ghosh arbetar med textil och går nu sitt andra år på Handarbetets vänner. Hennes praktik formas genom väven och hur återvunna material kan skapa knutar som bidrar till en paus. I Mellanrummet bidrar Ghosh med textila verk och uttryck utifrån en efterlängtad paus, med ursprung i en vävd pausnot. / Maneka Ghosh works with textile and is currently in her second year at Handarbetets vänner. Her practice is shaped through weaving and how recycled materials can form knots that offer a pause. For Mellanrummet she contributes textile works and expressions departing from a long-awaited pause, rooted in a woven rest-note.",
+        bio: "Maneka Ghosh (f. 1982) arbetar med textil och studerar för närvarande vid Handarbetets Vänner. Med lång erfarenhet av olika hantverksprocesser såsom metallsmide och väv arbetar Ghosh i skärningspunkten mellan konst och hantverk. Hennes praktik tar ofta form genom knutar, textilier och vävprocesser. I Mellanrummet undersöker Ghosh pausen som tillstånd och uttryck. Genom reflektion och förändring bidrar hon med vävar som gestaltar vad en paus kan vara — och hur den kan ta form. / Maneka Ghosh (b. 1982) works with textiles and is currently studying at Handarbetets Vänner. With extensive experience in various craft processes such as metalworking and weaving, Ghosh works at the intersection of art and craft. Her practice often takes shape through knots, textiles, and weaving processes. In Mellanrummet, Ghosh explores the pause as both a state and a form of expression. Through reflection and transformation, she contributes woven works that embody what a pause can be — and how it can take form.",
         remixOf: "Theodore Trottner",
         remixDesc: "tactile sound activated by visitors",
         start: "2026-05-24",
@@ -1129,7 +1210,7 @@
       {
         name: "Lior Nønne Malue Hansen",
         handle: "@liornonnemaluehansen",
-        bio: "Lior Nønne Malue Hansen har en masterexamen i fri konst från Kungl. Konsthögskolan i Stockholm och arbetar primärt med installationer som berör platsen och tiden där verket befinner sig. Med en lätt hand närmar sig Hansen materialiteter som ofta tolkas som hårda eller svåra att förändra. Hennes bildspråk tolkar omgivning, tid och tillfälle på ett taktilt sätt där besökaren får utrymme att läsa in och tolka verket. Hansen är aktiv i Korvfabriken i Stockholm och kommer till Mellanrummet bidra med en installation baserad på de material som finns i galleriets omgivning. / Lior Nønne Malue Hansen holds an MFA in fine art from the Royal Institute of Art, Stockholm, and works primarily with installations that engage with the place and time the work inhabits. With a light hand, Hansen approaches materialities often read as hard or difficult to alter. Her visual language interprets surroundings, time, and occasion in a tactile way that invites the visitor to read and interpret the work. Hansen is active at Korvfabriken in Stockholm and contributes to Mellanrummet with an installation based on materials found in the gallery's surroundings.",
+        bio: "Lior Nønne Malue Hansen (f. 1989) har en masterexamen i fri konst från Kungl. Konsthögskolan i Stockholm och arbetar ofta i skärningspunkten mellan skulptur och installation. Hansens praktik utgår ofta från funna material med stark koppling till platsen där installationen tar form. I mellanrummet bidrar hon genom att förankrat det kollektiva verket i fönstret till den plats och tid där det uppstår. Genom installationen knyts de andra verken i fönstret samman till den rumslighet som fönstret tillåter. Hansen är även verksam på Korvfabriken, en nystartad kulturscen i Slakthusområdet. / Lior Nønne Malue Hansen (b. 1989) holds a Master’s degree in Fine Arts from Royal Institute of Art and often works at the intersection of sculpture and installation. Hansen’s practice frequently begins with found materials that maintain a strong connection to the site where the installation takes shape. In Mellanrummet, she contributes by grounding the collective work in the window within the specific place and time in which it emerges. Through the installation, the other works in the window are connected to the spatiality that the window itself allows. Hansen is also active at Korvfabriken, a newly established cultural venue in the Slakthusområdet district.",
         remixOf: "Maneka Ghosh",
         remixDesc: "woven textiles and rest-notes",
         start: "2026-05-26",
@@ -1138,7 +1219,7 @@
       {
         name: "Indigo Booz",
         handle: "@indigobooz",
-        bio: "Indigo Booz arbetar med måleri och installation där ramen ofta står i fokus. Booz har en kandidatexamen i fri konst från Konstfack och ifrågasätter genom sitt konstnärskap vem som får synas i den offentliga bilden och hur en porträtteras. Booz bidrar till Mellanrummet med ett platsbundet måleri där tavlan uppstår under installationen och därmed också skapar ett deltagande från omgivningen och besökare. / Indigo Booz works with painting and installation, with the frame often in focus. Booz holds a BFA in fine art from Konstfack and questions through her practice who gets to be seen in the public image and how one is portrayed. She contributes to Mellanrummet with an on-site painting where the work emerges during the installation, opening up participation from the surroundings and visitors.",
+        bio: "Indigo Booz (f. 1999) arbetar med måleri och installation där ramen ofta står i fokus. Indigo har en kandidatexamen i fri konst från Konstfack och ifrågasätter genom sitt konstnärskap vem som får synas i den offentliga bilden och hur den porträtteras. Indigo bidrar till mellanrummet med måleri som sker på plats i galleriet, där tavlan uppstår under installationen. Genom denna intervention i fönstret öppnas även upp för en dialog med omgivningen och besökare av platsen under tiden som den formas. / Indigo Booz (b. 1999) works with painting and installation, often placing the frame itself at the center of the work. Indigo holds a Bachelor’s degree in Fine Arts from Konstfack and uses their artistic practice to question who is allowed visibility in the public image and how that visibility is portrayed. In Mellanrummet, Indigo contributes with a painting created on site in the gallery, where the artwork emerges during the installation process itself. Through this intervention in the window, a dialogue is also opened up with the surrounding environment and with visitors to the space as the work takes shape.",
         remixOf: "Lior Nønne Malue Hansen",
         remixDesc: "site-responsive installation from neighbourhood materials",
         start: "2026-05-28",
@@ -1147,7 +1228,7 @@
       {
         name: "Eric Sundevåg",
         handle: "@ericsundevag",
-        bio: "Eric Sundevåg har en kandidatexamen i fotografi från Akademin Valand och arbetar ofta med fotografi utifrån en bredare blick på vad mediet kan vara och hur det kan presenteras. I Mellanrummet bidrar Sundevåg med en installation av hår som är hans eget från en period under Covid-19-pandemin, då idén kläcktes. / Eric Sundevåg holds a BFA in photography from Akademin Valand and often approaches photography with a broader view of what the medium can be and how it can be presented. For Mellanrummet he contributes an installation made of his own hair from a period during the Covid-19 pandemic, when the idea first emerged.",
+        bio: "Eric Sundevåg (f. 1993) har en kandidatexamen i fotografi från Akademin Valand och arbetar främst med fotografi, men även video och ljud förekommer i hans praktik. I sina verk återkommer Sundevåg ofta till teman som minne, tid och avstånd. Möten -  både verkliga och fiktiva - är ett genomgående inslag i hans praktik, och i Mellanrummet bidrar han med ett verk där mötet med de andra konstnärernas tidigare installationer står i fokus. / Eric Sundevåg (b. 1993) holds a Bachelor’s degree in Photography from Academy Valand and primarily works with photography, though video and sound also appear in his practice. In his works, Sundevåg often returns to themes such as memory, time, and distance. Encounters — both real and fictional — are a recurring element in his artistic practice. In Mellanrummet, he contributes a work that focuses on the encounter with the previous installations created by the other participating artists.",
         remixOf: "Indigo Booz",
         remixDesc: "on-site painting and public portraiture",
         start: "2026-05-30",
@@ -1156,7 +1237,7 @@
       {
         name: "Isa Robertini",
         handle: "@isarobertini",
-        bio: "Isa Robertini (b. 1996) har en master i fri konst från Konsthögskolan i Wien och arbetar primärt med installation. Med pasta som utgångspunkt skapar Robertini i Mellanrummet en sardinsk-inspirerad pastainstallation, formad av hennes nuvarande residens på Sardinien. / Isa Robertini (b. 1996) holds an MFA in fine art from the Academy of Fine Arts Vienna and works primarily with installation. Taking pasta as her starting point, Robertini creates for Mellanrummet a Sardinian-inspired pasta installation, shaped by her current residency in Sardinia.",
+        bio: "Isa Robertini (f. 1996) har en masterexamen i fri konst från Academy of Fine Arts i Wien och arbetar främst med skulpturala installationer. Med utgångspunkt i sardiska byggnads- och hantverkstraditioner utvecklar Robertini installationer som kan omformas, expandera och dras samman i takt med att omgivningen förändras. I mellanrummet bidrar Robertini med en installation som leker med förändring över tid - mellan förlust och beständighet. Fönstret blir i detta fall landskapet där installationen sammansätts enligt principer hämtade från muro a secco. Dess bygglogik fungerar här som både metod och referens, samtidigt som verket förblir instabilt och öppet för framtida omformuleringar genom efterföljande konstnärliga ingrepp. / Isa Robertini (b. 1996) holds a Master’s degree in Fine Arts from Academy of Fine Arts Vienna and primarily works with sculptural installations. Drawing from Sardinian building and craft traditions, Robertini develops installations that can be reshaped, expanded, and contracted as their surroundings change. In Mellanrummet, Robertini contributes an installation that plays with transformation over time — between loss and permanence. In this context, the window becomes the landscape in which the installation is assembled according to principles derived from muro a secco (dry stone wall construction). Its building logic functions both as a method and a reference, while the work itself remains unstable and open to future reformulations through subsequent artistic interventions.",
         remixOf: "Eric Sundevåg",
         remixDesc: "photographic installation made of hair",
         start: "2026-06-01",
@@ -1165,7 +1246,7 @@
       {
         name: "Sara Darle Olsson",
         handle: "@saradarleolsson",
-        bio: "Sara Darle Olsson är utbildad vid Rietveld Akademie i Amsterdam och arbetar ofta med befintliga material. / Sara Darle Olsson studied at the Rietveld Academie in Amsterdam and often works with existing materials.",
+        bio: "Sara Darle Olsson (f. 1999) är har en examen i Architectural Design på Gerrit Rietveld Academie i Amsterdam. I Darle Olssons praktik står platsen och i fokus. Genom installationer som går att montera ner och tas isär utan att materialet går till spillo skapar Darle Olsson installationer med återbruk i åtanke. De senaste åren har Darle Olsson haft fokus på att arbeta i grupp och i föränderliga processer som skapar ett kollektiv och i mellanrummet bidrar hon med en installation där de andras verk både står i fokus men även försvinner på olika sätt. / Sara Darle Olsson (b. 1999) holds a degree in Architectural Design from Gerrit Rietveld Academie. In Darle Olsson’s practice, site and spatial context are central. Through installations that can be dismantled and disassembled without wasting materials, she creates works with reuse and sustainability in mind. In recent years, Darle Olsson has focused on working collaboratively and through evolving processes that foster collectivity. In Mellanrummet, she contributes an installation in which the works of the other artists are both brought into focus and, in different ways, made to disappear.",
         remixOf: "Isa Robertini",
         remixDesc: "Sardinian-inspired pasta installation",
         start: "2026-06-03",
@@ -1174,7 +1255,7 @@
       {
         name: "Vincent Duraud",
         handle: "@vincentduraud",
-        bio: "Vincent Duraud arbetar med installationer som ofta är lättföränderliga eller byggda av enklare material som även fungerar som täckande. / Vincent Duraud works with installations that are often easily transformable or built from simple materials that also function as cover.",
+        bio: "Vincent Duraud (f. 1986) arbetar främst med installationer, ofta uppbyggda av fragila material som delvis är genomskinliga eller som skapar nya sätt att se de redan existerande verken. I Mellanrummet bidrar Duraud med en temporär vägg av posters, där postern används som medium för att väcka åtrå, längtan och minne, men också som en uppmaning till förändring. Temporaliteten i Durauds verk öppnar för förskjutning och omformning; genom att riva, bryta upp eller bygga vidare på installationen skapas ett tillstånd av ständig förändring. I takt med att fönstret förändras kan tidigare verk återträda som fragmentariska minnen av platsen och den gemensamma installationen. Verket reflekterar därigenom både över den kollektiva processen och den förlorade kontroll som projektet tar sin utgångspunkt i. / Vincent Duraud (b. 1986) works with installation, performance and organising. Their installations are often constructed from fragile materials that create new ways of viewing the context of the works. In Mellanrummet, Duraud contributes with a temporary wall of posters - using the poster as a medium to evoke desire and memory, but also as a call for change. The temporality of Duraud’s work opens up for displacement and transformation; by tearing apart, disrupting, or building onto the installation, they create a condition of constant change. As the window installation evolves, previous works may reappear as fragmentary memories of the site and the collective installation. In this way, the work reflects both on the collective process and on the loss of control from which the project takes its point of departure.",
         remixOf: "Sara Darle Olsson",
         remixDesc: "found and existing materials",
         start: "2026-06-05",
@@ -1183,7 +1264,7 @@
       {
         name: "Fältstudio",
         handle: "@faltstudio",
-        bio: "FÄLTSTUDIO är ett arkitektkollektiv beläget söder om Stockholm. De arbetar gemensamt med konstinstallationer och arkitektoniska interventioner – senast med ett verk på Sergels torg inom Stockholm konsts satsning på Segelstorg. Till Mellanrummet arbetar de med spillmaterial från de övriga konstnärernas installationer för att avsluta processen. Gruppen består i dagsläget av 14 medlemmar och har kontor i Örnsbergs industriområde. / FÄLTSTUDIO is an architecture collective based south of Stockholm. They work collectively with art installations and architectural interventions — most recently at Sergels torg as part of Stockholm konst's Segelstorg initiative. For Mellanrummet they work with leftover materials from the other artists' installations to close the process. The group currently consists of 14 members and has its office in the Örnsberg industrial area.",
+        bio: "FÄLTSTUDIO är ett arkitektkollektiv beläget i Stockholm. De arbetar gemensamt för konstinstallationer och arkitektoniska interventioner. Till mellanrummet kommer de arbeta med spillmaterial från installationen av de övriga konstnärerna för att avsluta det gemensamma verket. Gruppen består i dagsläget av ett tiotal arkitekter som har ett kontor i Örnsbergs industriområde. / FÄLTSTUDIO is an architectural collective based in Stockholm. The group works collaboratively with art installations and architectural interventions. For Mellanrummet, they will work with leftover materials from the installations of the other participating artists in order to complete the collective work. The group currently consists of around ten architects and is based in the Örnsbergs industrial area.",
         remixOf: "Vincent Duraud",
         remixDesc: "ephemeral installation from simple covering materials",
         start: "2026-06-07",
@@ -1198,7 +1279,7 @@
       start: "2026-06-08",
       dateLabel: "8.6",
       vernissageLabel: "8.6 · Finissage 17–19",
-      bio: "17.00–19.00 – då blir det bubbel! Under finissagen river vi utställningen, det blir ett event där den sista handen är lagd på det gemensamma verket och verket blir både klart och tar slut vid tidpunkten. Klockan 19.00 är verket inte längre en installation av 10 konstnärer utan en plats för reflektion av vad som skett och vad som komma skall. Av och med Curator Linnea Wästfelt. / 17.00–19.00 – bubbles will be served! During the finissage we dismantle the exhibition — an event where the final touch is added to the collective work, which becomes both complete and finished at the same moment. At 19.00 the work is no longer an installation by 10 artists but a place for reflection on what has happened and what is to come. By and with Curator Linnea Wästfelt.",
+      bio: "Under finissagen river vi utställningen, det blir ett event där den sista handen är lagd på det gemensamma verket och verket blir således både färdigt i denna kontext och tar slut vid tidpunkten. Klockan 19.00 är verket inte längre en installation av 10 konstnärer utan en plats för reflektion av vad som skett och vad som komma skall. Av och med Curator Linnea Wästfelt. / During the finissage, we will dismantle the exhibition in an event where the final gesture is made to the collective work. In this way, the work becomes both complete within this context and simultaneously comes to an end at that moment. At 7:00 PM, the work is no longer an installation by ten artists, but rather a site for reflection on what has taken place and what is yet to come. By and with curator Linnea Wästfelt.",
       isFinissage: true
     };
 
@@ -1546,6 +1627,69 @@
       const delta = e.changedTouches[0].clientY - touchStartY;
       if (delta > 80 && sheet.scrollTop === 0) closeModal();
     }, { passive: true });
+
+    /* ─────────────────────────────────────────────────────────────────────
+       DEBUG PANEL — swap the current-artist block to any artist / finissage
+       for previewing. Remove this block and the <div id="debugPanel"> in
+       the HTML to disable.
+       ───────────────────────────────────────────────────────────────────── */
+    (function setupDebugPanel() {
+      const panel  = document.getElementById('debugPanel');
+      if (!panel) return;
+      const toggle = panel.querySelector('.debug-toggle');
+      const list   = panel.querySelector('.debug-content');
+
+      toggle.addEventListener('click', () => {
+        panel.classList.toggle('collapsed');
+        const collapsed = panel.classList.contains('collapsed');
+        toggle.textContent = (collapsed ? '▸' : '▾') + ' Debug · välj konstnär';
+      });
+
+      function makeBtn(label, handler, isActive) {
+        const btn = document.createElement('button');
+        btn.className = 'debug-btn' + (isActive ? ' active' : '');
+        btn.type = 'button';
+        btn.textContent = label;
+        btn.addEventListener('click', () => {
+          handler();
+          list.querySelectorAll('.debug-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+        return btn;
+      }
+
+      list.appendChild(makeBtn('◯ Auto (dagens datum)', () => previewArtist('auto'), true));
+      ARTISTS.forEach((a, i) => {
+        list.appendChild(makeBtn((i + 1) + '. ' + a.name, () => previewArtist(i)));
+      });
+      list.appendChild(makeBtn((ARTISTS.length + 1) + '. Finissage', () => previewArtist('finissage')));
+    })();
+
+    function previewArtist(target) {
+      let artist;
+      if (target === 'auto')       artist = ARTISTS[getCurrentIndex()];
+      else if (target === 'finissage') artist = FINISSAGE;
+      else                          artist = ARTISTS[target];
+      if (!artist) return;
+
+      document.getElementById('currentLabel').textContent =
+        artist.dateLabel || formatDateRange(artist.start);
+      const nameEl = document.getElementById('currentName');
+      nameEl.textContent = artist.name;
+      const parts = splitBio(artist.bio);
+      document.getElementById('currentBio').textContent = parts.sv;
+      document.getElementById('currentBioEn').textContent = parts.en;
+
+      // Refit name to the new text, then re-run the per-letter animation so
+      // you can see it scatter/settle for the chosen artist.
+      fitTextWidth(nameEl);
+      animateLetters('#currentLabel', FAST_LETTER_OPTS);
+      animateLetters('#currentName',  FAST_LETTER_OPTS);
+
+      // Bring block 2 into view so you can see the change.
+      const section = document.getElementById('current');
+      if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   </script>
 </body>
 </html>
