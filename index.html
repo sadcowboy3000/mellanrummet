@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="assets/favicon.png"/>
   <script>
     // Run as early as possible so the browser doesn't restore the previous
     // scroll position before our body script gets a chance to.
@@ -998,6 +999,32 @@
       /* Step-based: NO transition. Each state change snaps instantly. */
     }
 
+    /* Image-letter version of the headline. The container locks to the
+       original Logo.png aspect ratio (1914 / 491) and each letter is
+       absolutely positioned within it as a percentage of that canvas. */
+    .landing-headline-logo {
+      position: relative;
+      width: min(100%, 920px);
+      aspect-ratio: 1914 / 491;
+      height: auto;
+      margin: 0 auto;
+      /* Wipe the text-based properties so they don't bleed in. */
+      font-size: 0;
+      letter-spacing: 0;
+      line-height: 0;
+    }
+    .landing-headline-logo .headline-letter {
+      position: absolute;
+      /* left, top, width, height come from inline styles set in JS */
+    }
+    .landing-headline-logo .headline-letter img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
     /* ── INTRO: hide intro elements until the headline animation finishes.
        Block 2 (.current-section) is excluded so it's visible no matter when
        you scroll to it. ── */
@@ -1084,7 +1111,7 @@
   <!-- Persistent top nav (fixed across all blocks) -->
   <div class="nav-bar">
     <span class="nav-wordmark">Åsögatan 122</span>
-    <span class="nav-wordmark">Galleri Glommennnn</span>
+    <span class="nav-wordmark">Galleri Glommen</span>
     <span class="nav-date" id="navDate"></span>
   </div>
 
@@ -1366,7 +1393,7 @@ Different materialities and forms of expression intersect in Bergman's practice.
       name: "Finissage",
       start: "2026-06-08",
       dateLabel: "8.6",
-      vernissageLabel: "8.6 · Finissage 17–19",
+      vernissageLabel: "Finissage 8/6 17–19",
       bio: "Under finissagen river vi utställningen, det blir ett event där den sista handen är lagd på det gemensamma verket och verket blir således både färdigt i denna kontext och tar slut vid tidpunkten. Klockan 19.00 är verket inte längre en installation av 10 konstnärer utan en plats för reflektion av vad som skett och vad som komma skall. Av och med Curator Linnea Wästfelt. / During the finissage, we will dismantle the exhibition in an event where the final gesture is made to the collective work. In this way, the work becomes both complete within this context and simultaneously comes to an end at that moment. At 7:00 PM, the work is no longer an installation by ten artists, but rather a site for reflection on what has taken place and what is yet to come. By and with curator Linnea Wästfelt.",
       isFinissage: true
     };
@@ -1438,27 +1465,36 @@ Different materialities and forms of expression intersect in Bergman's practice.
 
       const el = document.querySelector(selector);
       if (!el) return;
-      const text = el.textContent;
-      el.setAttribute('aria-label', text);
-      el.textContent = '';
 
-      const letters = [];
-      for (const ch of text) {
-        const span = document.createElement('span');
-        span.className = 'headline-letter';
-        span.setAttribute('aria-hidden', 'true');
-        span.textContent = ch === ' ' ? ' ' : ch;
-        // Random initial offset within the viewport (no rotation, no fade).
-        // Tune the multipliers to make letters scatter further or stay tighter.
+      // If the element already has .headline-letter children (image-based
+      // logo headline), animate those directly. Otherwise split textContent.
+      let letters = Array.from(el.querySelectorAll(':scope > .headline-letter'));
+      const buildFromText = letters.length === 0;
+      if (buildFromText) {
+        const text = el.textContent;
+        el.setAttribute('aria-label', text);
+        el.textContent = '';
+
+        for (const ch of text) {
+          const span = document.createElement('span');
+          span.className = 'headline-letter';
+          span.setAttribute('aria-hidden', 'true');
+          span.textContent = ch === ' ' ? ' ' : ch;
+          el.appendChild(span);
+          letters.push(span);
+        }
+      }
+
+      // Apply scatter (random offset + rotation) to every letter,
+      // text-based or pre-built image children alike.
+      letters.forEach((span) => {
         const dx = (Math.random() - 0.5) * o.scatterX;
         const dy = (Math.random() - 0.5) * o.scatterY;
         const rot = [0, 90, 180][Math.floor(Math.random() * 3)];
         span.dataset.rot = rot;
         span.style.transform = 'translate(' + dx + 'vw, ' + dy + 'vh) rotate(' + rot + 'deg)';
         if (!o.showInitially) span.style.opacity = '0';
-        el.appendChild(span);
-        letters.push(span);
-      }
+      });
 
       // Phase 1: appear one at a time at random positions (skipped if showInitially)
       let allVisibleAt = 0;
@@ -1499,6 +1535,57 @@ Different materialities and forms of expression intersect in Bergman's practice.
         }
       });
     }
+
+    // ── LOGO HEADLINE
+    // Native dimensions of the original Logo.png — used to compute each
+    // letter's percentage offset inside the .landing-headline container.
+    const LOGO_W = 1914;
+    const LOGO_H = 491;
+    // Each entry: image path + x/y position + width/height in the source
+    // logo's pixel space. Letters are absolutely positioned so the final
+    // layout exactly matches the assembled Logo.png artwork.
+    const LOGO_POS = [
+      { src: 'assets/LogoFont/Mellanrummet-_0000__1.png', x: 0,    y: 53,  w: 135, h: 247 }, // "
+      { src: 'assets/LogoFont/Mellanrummet-_0001_i.png',  x: 108,  y: 42,  w: 246, h: 408 }, // i
+      { src: 'assets/LogoFont/Mellanrummet-_0002_m.png',  x: 217,  y: 131, w: 292, h: 347 }, // m
+      { src: 'assets/LogoFont/Mellanrummet-_0003_e1.png', x: 421,  y: 118, w: 164, h: 333 }, // e
+      { src: 'assets/LogoFont/Mellanrummet-_0004_l1.png', x: 566,  y: 42,  w: 106, h: 380 }, // l
+      { src: 'assets/LogoFont/Mellanrummet-_0005_l2.png', x: 610,  y: 49,  w:  97, h: 348 }, // l
+      { src: 'assets/LogoFont/Mellanrummet-_0006_a.png',  x: 687,  y: 105, w: 134, h: 269 }, // a
+      { src: 'assets/LogoFont/Mellanrummet-_0007_n.png',  x: 816,  y: 104, w: 140, h: 294 }, // n
+      { src: 'assets/LogoFont/Mellanrummet-_0008_r.png',  x: 932,  y: 90,  w: 226, h: 324 }, // r
+      { src: 'assets/LogoFont/Mellanrummet-_0009_u.png',  x: 1044, y: 147, w: 164, h: 242 }, // u
+      { src: 'assets/LogoFont/Mellanrummet-_0010_m1.png', x: 1181, y: 106, w: 173, h: 296 }, // m
+      { src: 'assets/LogoFont/Mellanrummet-_0011_m2.png', x: 1327, y: 139, w: 178, h: 266 }, // m
+      { src: 'assets/LogoFont/Mellanrummet-_0012_e2.png', x: 1474, y: 165, w: 149, h: 235 }, // e
+      { src: 'assets/LogoFont/Mellanrummet-_0013_t.png',  x: 1604, y: 67,  w: 161, h: 324 }, // t
+      { src: 'assets/LogoFont/Mellanrummet-_0014__2.png', x: 1769, y: 42,  w: 145, h: 118 }  // "
+    ];
+
+    (function buildLogoHeadline() {
+      const el = document.querySelector('.landing-headline');
+      if (!el) return;
+      el.setAttribute('aria-label', 'i mellanrummet');
+      el.textContent = '';
+      el.classList.add('landing-headline-logo');
+      for (const item of LOGO_POS) {
+        const span = document.createElement('span');
+        span.className = 'headline-letter';
+        span.setAttribute('aria-hidden', 'true');
+        // Position each letter as a percentage of the source canvas, so the
+        // headline can scale responsively while preserving the lockup.
+        span.style.left   = (item.x / LOGO_W * 100) + '%';
+        span.style.top    = (item.y / LOGO_H * 100) + '%';
+        span.style.width  = (item.w / LOGO_W * 100) + '%';
+        span.style.height = (item.h / LOGO_H * 100) + '%';
+        const img = document.createElement('img');
+        img.src = item.src;
+        img.alt = '';
+        img.draggable = false;
+        span.appendChild(img);
+        el.appendChild(span);
+      }
+    })();
 
     animateLetters('.landing-headline');
     animateLetters('.landing-date');
