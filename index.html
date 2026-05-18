@@ -805,6 +805,17 @@
     }
 
     .schedule-hint {
+      font-family: var(--serif);
+      font-size: 15px;
+      font-style: italic;
+      letter-spacing: 0.04em;
+      color: var(--gray-500);
+      margin-top: -1rem;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .schedule-hint-en {
       font-family: var(--sans);
       font-size: 15px;
       font-style: italic;
@@ -1120,9 +1131,9 @@
       <p class="schedule-hint" aria-label="Tryck för mer info">
         <span class="schedule-hint-track" aria-hidden="true">
           <span>Tryck för mer info</span>
-          <span class="schedule-hint-track-en">Click for more info</span>
+          <span class="schedule-hint-en">Click for more info</span>
           <span>Tryck för mer info</span>
-          <span class="schedule-hint-track-en">Click for more info</span>
+          <span class="schedule-hint-en">Click for more info</span>
         </span>
       </p>
       <div class="schedule-list" id="scheduleList"></div>
@@ -1482,24 +1493,12 @@
       return { sv: parts[0] || '', en: parts.slice(1).join(' / ').trim() };
     }
 
-    // Escapes HTML in `text` and converts \n into a <br>.
-    // Use whenever you want line breaks in artist text — write \n in the
-    // source string and \n\n for a paragraph-style blank line.
-    function renderText(text) {
-      return String(text || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/\n/g, '<br>');
-    }
-
     // ── CURRENT SECTION
     document.getElementById('currentLabel').textContent = formatDateRange(current.start);
     document.getElementById('currentName').textContent = current.name;
     const currentBioParts = splitBio(current.bio);
-    document.getElementById('currentBio').innerHTML = renderText(currentBioParts.sv);
-    document.getElementById('currentBioEn').innerHTML = renderText(currentBioParts.en);
+    document.getElementById('currentBio').textContent = currentBioParts.sv;
+    document.getElementById('currentBioEn').textContent = currentBioParts.en;
 
     // Find the LARGEST font-size in [minSize, maxSize] that lets the element's
     // text fit on one line within the viewport (so on mobile the name reaches
@@ -1590,8 +1589,8 @@
       const modalNameEl = document.getElementById('modalName');
       modalNameEl.textContent = artist.name;
       const modalBioParts = splitBio(artist.bio);
-      document.getElementById('modalBio').innerHTML = renderText(modalBioParts.sv);
-      document.getElementById('modalBioEn').innerHTML = renderText(modalBioParts.en);
+      document.getElementById('modalBio').textContent = modalBioParts.sv;
+      document.getElementById('modalBioEn').textContent = modalBioParts.en;
 
       sheet.scrollTop = 0;
       overlay.classList.add('open');
@@ -1710,8 +1709,8 @@
       const nameEl = document.getElementById('currentName');
       nameEl.textContent = artist.name;
       const parts = splitBio(artist.bio);
-      document.getElementById('currentBio').innerHTML = renderText(parts.sv);
-      document.getElementById('currentBioEn').innerHTML = renderText(parts.en);
+      document.getElementById('currentBio').textContent = parts.sv;
+      document.getElementById('currentBioEn').textContent = parts.en;
 
       // Refit name to the new text, then re-run the per-letter animation so
       // you can see it scatter/settle for the chosen artist.
