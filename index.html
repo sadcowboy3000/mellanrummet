@@ -1617,6 +1617,10 @@ Different materialities and forms of expression intersect in Bergman's practice.
           if (entry.isIntersecting) {
             animateLetters('#currentLabel', FAST_LETTER_OPTS);
             animateLetters('#currentName', FAST_LETTER_OPTS);
+            // Re-fit AFTER spans are built so the search sees the real
+            // rendered width (inline-block layout + explicit space width
+            // can differ slightly from plain text).
+            fitTextWidth(document.getElementById('currentName'));
             observer.disconnect();
           }
         });
@@ -1900,11 +1904,13 @@ Different materialities and forms of expression intersect in Bergman's practice.
       // ones before it become .past.
       updateScheduleState(idx);
 
-      // Refit name to the new text, then re-run the per-letter animation so
-      // you can see it scatter/settle for the chosen artist.
+      // Refit name to the new text, then re-run the per-letter animation,
+      // then refit once more so the binary search sees the actual span
+      // layout (which can differ slightly from plain text width).
       fitTextWidth(nameEl);
       animateLetters('#currentLabel', FAST_LETTER_OPTS);
       animateLetters('#currentName',  FAST_LETTER_OPTS);
+      fitTextWidth(nameEl);
 
       // Bring block 2 into view so you can see the change.
       const section = document.getElementById('current');
