@@ -900,6 +900,17 @@
       margin: 0 auto 1.25rem;
     }
 
+    .about-text-en{
+      font-family: var(--sans);
+      font-style: italic;
+      font-size: 13px;
+      line-height: 2.2;
+      color: var(--gray-500);
+      text-align: left;
+      max-width: 560px;
+      margin: 0 auto 1.25rem;
+    }
+
     .sub-about {
       font-family: var(--serif);
       font-size: 18px;
@@ -1106,7 +1117,14 @@
   <section class="block schedule-block" id="info">
     <div class="schedule-section">
       <p class="section-label">Schema</p>
-      <p class="schedule-hint">Tryck för mer info</p>
+      <p class="schedule-hint" aria-label="Tryck för mer info">
+        <span class="schedule-hint-track" aria-hidden="true">
+          <span>Tryck för mer info</span>
+          <span class="schedule-hint-track-en">Click for more info</span>
+          <span>Tryck för mer info</span>
+          <span class="schedule-hint-track-en">Click for more info</span>
+        </span>
+      </p>
       <div class="schedule-list" id="scheduleList"></div>
     </div>
 
@@ -1114,9 +1132,12 @@
       <p class="section-label">Om projektet</p>
       <p class="about-text">
         Vad händer med ett konstverk när det upphör att tillhöra en enskild individ och istället blir en del av ett gemensamt kretslopp? I en tid där konstscenen präglas av exklusivitet och mätbarhet, går projektet I Mellanrummet i motsatt riktning. Genom att hylla process framför slutprodukt och det kollektiva framför det privata, möjliggör vi en plats där kontrollen förflyttas som en stafettpinne mellan deltagande konstnärer. Här finns inget konstant; istället befinner sig utställningen i mellanrummet – i ett tillstånd av konstant förändring.
-        <br><br>Tio konstnärer är redo att delta i en kedjereaktion av skapande i ett kvadratmeterstort fönster på Södermalm. Varannan dag öppnas dörren för en ny konstnär som inte bara adderar, utan även transformerar föregående verk till sitt eget. På så vis skapas en ordlös ständigt pågående dialog. Det blir en övning i att släppa taget och låta verket leva sitt eget liv genom andras händer. 
+      <br><br>Tio konstnärer är redo att delta i en kedjereaktion av skapande i ett kvadratmeterstort fönster på Södermalm. Varannan dag öppnas dörren för en ny konstnär som inte bara adderar, utan även transformerar föregående verk till sitt eget. På så vis skapas en ordlös ständigt pågående dialog. Det blir en övning i att släppa taget och låta verket leva sitt eget liv genom andras händer. 
 
 
+      </p>
+      <p class="about-text-en">What happens to an artwork when it ceases to belong to a single individual and instead becomes part of a shared cycle? In a time when the art scene is characterized by exclusivity and measurability, the project I Mellanrummet moves in the opposite direction. By valuing process over final product and the collective over the private, we create a space where control is passed along between participating artists. Nothing here is constant; instead, the exhibition exists in the in-between — a state of continuous transformation.
+      <br><br>Ten artists are ready to take part in a chain reaction of creation within a one-square-meter window on Södermalm. Every other day, the door opens for a new artist who not only adds to, but also transforms the previous work into their own. In this way, a wordless, ongoing dialogue emerges. It becomes an exercise in letting go and allowing the work to live its own life through the hands of others.
       </p>
       <p class="sub-about">Kurerad och på initiativ av Linnea Wästfelt</p>
       <p class="about-meta">Hemsida av Linn Willebrand & Linnea Wästfelt 2026</p>
@@ -1461,12 +1482,24 @@
       return { sv: parts[0] || '', en: parts.slice(1).join(' / ').trim() };
     }
 
+    // Escapes HTML in `text` and converts \n into a <br>.
+    // Use whenever you want line breaks in artist text — write \n in the
+    // source string and \n\n for a paragraph-style blank line.
+    function renderText(text) {
+      return String(text || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/\n/g, '<br>');
+    }
+
     // ── CURRENT SECTION
     document.getElementById('currentLabel').textContent = formatDateRange(current.start);
     document.getElementById('currentName').textContent = current.name;
     const currentBioParts = splitBio(current.bio);
-    document.getElementById('currentBio').textContent = currentBioParts.sv;
-    document.getElementById('currentBioEn').textContent = currentBioParts.en;
+    document.getElementById('currentBio').innerHTML = renderText(currentBioParts.sv);
+    document.getElementById('currentBioEn').innerHTML = renderText(currentBioParts.en);
 
     // Find the LARGEST font-size in [minSize, maxSize] that lets the element's
     // text fit on one line within the viewport (so on mobile the name reaches
@@ -1557,8 +1590,8 @@
       const modalNameEl = document.getElementById('modalName');
       modalNameEl.textContent = artist.name;
       const modalBioParts = splitBio(artist.bio);
-      document.getElementById('modalBio').textContent = modalBioParts.sv;
-      document.getElementById('modalBioEn').textContent = modalBioParts.en;
+      document.getElementById('modalBio').innerHTML = renderText(modalBioParts.sv);
+      document.getElementById('modalBioEn').innerHTML = renderText(modalBioParts.en);
 
       sheet.scrollTop = 0;
       overlay.classList.add('open');
@@ -1677,8 +1710,8 @@
       const nameEl = document.getElementById('currentName');
       nameEl.textContent = artist.name;
       const parts = splitBio(artist.bio);
-      document.getElementById('currentBio').textContent = parts.sv;
-      document.getElementById('currentBioEn').textContent = parts.en;
+      document.getElementById('currentBio').innerHTML = renderText(parts.sv);
+      document.getElementById('currentBioEn').innerHTML = renderText(parts.en);
 
       // Refit name to the new text, then re-run the per-letter animation so
       // you can see it scatter/settle for the chosen artist.
