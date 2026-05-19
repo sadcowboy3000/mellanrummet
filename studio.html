@@ -393,6 +393,8 @@
       bg: 'white',
       speed: 1.0,
       duration: 8.0,
+      scatterX: 0.20,  // fraction of canvas width  — how far letters spawn horizontally
+      scatterY: 0.15,  // fraction of canvas height — how far letters spawn vertically
       elements: PRESETS['wordmark-hero'](),
       selectedIndex: -1
     };
@@ -412,9 +414,8 @@
       pauseBetween:  150,
       twoStepRatio:  0.4,
       rotateDelayMin: 100,
-      rotateDelayMax: 350,
-      scatterX:      0.20,
-      scatterY:      0.15
+      rotateDelayMax: 350
+      // scatterX / scatterY now live on `state` so they're user-editable.
     };
 
     let plans = []; // per-element animation plans
@@ -437,8 +438,8 @@
 
     function assignTimings(letters, cw, ch) {
       for (const l of letters) {
-        l.dx = (rand() - 0.5) * ANIM_OPTS.scatterX * cw;
-        l.dy = (rand() - 0.5) * ANIM_OPTS.scatterY * ch;
+        l.dx = (rand() - 0.5) * state.scatterX * cw;
+        l.dy = (rand() - 0.5) * state.scatterY * ch;
         l.rot = [0, 90, 180][Math.floor(rand() * 3)];
         l.stayRotated = l.rot !== 0 && rand() < ANIM_OPTS.twoStepRatio;
       }
@@ -809,6 +810,12 @@
       const animFolder = pane.addFolder({ title: 'Animation' });
       animFolder.addBinding(state, 'speed',    { min: 0.5, max: 2,  step: 0.1 });
       animFolder.addBinding(state, 'duration', { min: 4,   max: 12, step: 0.5 });
+      // Scatter range — fraction of canvas dimension. 0 = letters spawn in
+      // place (no scatter), 1.0 = letters can spawn a full canvas-edge away.
+      animFolder.addBinding(state, 'scatterX', { label: 'scatter X', min: 0, max: 1, step: 0.01 })
+        .on('change', () => reset());
+      animFolder.addBinding(state, 'scatterY', { label: 'scatter Y', min: 0, max: 1, step: 0.01 })
+        .on('change', () => reset());
       animFolder.addButton({ title: '▶ Play animation' }).on('click', play);
       animFolder.addButton({ title: '↺ Reset to settled' }).on('click', reset);
 
@@ -935,6 +942,8 @@
         bg: state.bg,
         speed: state.speed,
         duration: state.duration,
+        scatterX: state.scatterX,
+        scatterY: state.scatterY,
         elements: state.elements
       });
       localStorage.setItem(SLOT_KEY + n, blob);
@@ -947,6 +956,8 @@
       state.bg = data.bg;
       state.speed = data.speed;
       state.duration = data.duration;
+      if (typeof data.scatterX === 'number') state.scatterX = data.scatterX;
+      if (typeof data.scatterY === 'number') state.scatterY = data.scatterY;
       state.elements = data.elements;
       // Re-stamp IDs to avoid collisions.
       state.elements.forEach(el => { el.id = 'el-' + (nextId++); });
