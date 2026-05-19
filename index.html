@@ -125,6 +125,13 @@
     @media (max-width: 700px) {
       .title-break-mobile { display: initial; }
     }
+    /* On desktop, force the title to a single line so the .landing-main
+       max-width (720px) can't push "between" to the next row. */
+    @media (min-width: 701px) {
+      .landing[data-lang="en"] .landing-headline {
+        white-space: nowrap;
+      }
+    }
 
     .landing-top {
       padding: 1rem 1rem;
