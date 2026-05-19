@@ -35,6 +35,10 @@
       
      }
 
+     ::-webkit-scrollbar {
+    display: none;
+}
+
     html {
       scroll-behavior: smooth;
       -webkit-text-size-adjust: 100%;
@@ -83,6 +87,11 @@
       white-space: nowrap;
     }
 
+    /* Hide the "Schema" scroll cue on mobile widths. */
+    @media (max-width: 700px) {
+      .schema-cue { display: none; }
+    }
+
     .block-cue .scroll-arrow {
       width: 28px;
       height: 28px;
@@ -91,6 +100,10 @@
     .block-cue .scroll-arrow svg {
       width: 12px;
       height: 12px;
+    }
+    
+    .block-cue #top {
+     display: none;
     }
 
     /* Center the WORD on the screen with the arrow still to its right.
@@ -1177,7 +1190,7 @@
     }
 
     .schedule-item.current .schedule-name {
-      font-weight: 500;
+      font-weight: 400;
       font-size: 16px;
       font-family: var(--sans);
       color: rgb(192, 0, 0);
@@ -1326,7 +1339,7 @@
     .landing-bottom,
     .block:not(.landing):not(.current-section) {
       opacity: 0;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     body.ready .landing-subheadline,
@@ -1406,7 +1419,6 @@
   <div class="nav-bar">
     <span class="nav-wordmark">Åsögatan 122</span>
     <span class="nav-wordmark">Galleri Glommen</span>
-    <span class="nav-date" id="navDate"></span>
   </div>
 
   <!-- Marquee bar (sits just below the top nav) -->
@@ -1472,7 +1484,7 @@
       </div>
     </div>
 
-    <a class="block-cue" href="#info">
+    <a class="block-cue schema-cue" href="#info">
       <span>Schema</span>
       <div class="scroll-arrow">
         <svg viewBox="0 0 12 12" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1539,14 +1551,6 @@
       <p class="about-meta">Hemsida av Linn Willebrand & Linnea Wästfelt 2026</p>
     </div>
 
-    <a class="block-cue" href="#top">
-      <span>Tillbaka till toppen</span>
-      <div class="scroll-arrow">
-        <svg viewBox="0 0 12 12" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="6" y1="1" x2="6" y2="11"/><polyline points="2,5 6,1 10,5"/>
-        </svg>
-      </div>
-    </a>
   </section>
 
   <!-- ── MODAL ── -->
@@ -1793,10 +1797,6 @@ Different materialities and forms of expression intersect in Bergman's practice.
       if (t < parseDate(ARTISTS[0].start)) return 0;
       return ARTISTS.length - 1;
     }
-
-    // ── POPULATE NAV DATE
-    const navDate = document.getElementById('navDate');
-    navDate.textContent = today().toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' });
 
     // ── POPULATE MARQUEE
     // Builds the marquee strip in the chosen language. Called once on load
