@@ -38,8 +38,8 @@
     html {
       scroll-behavior: smooth;
       -webkit-text-size-adjust: 100%;
-      /* keep anchor jumps clear of the fixed nav-bar */
-      scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 3.5rem);
+      /* keep anchor jumps clear of the fixed nav-bar + marquee */
+      scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 5.25rem);
     }
 
     body {
@@ -59,23 +59,24 @@
       position: relative;
     }
 
-    /* Non-landing blocks fit inside the area visible below the fixed nav-bar,
-       so their bottom-pinned scroll cues land at the bottom of the viewport. */
+    /* Non-landing blocks fit inside the area visible below the fixed nav-bar
+       and marquee, so their bottom-pinned scroll cues land at the bottom of
+       the viewport. */
     .block:not(.landing) {
-      min-height: calc(100dvh - 3.5rem);
+      min-height: calc(100dvh - 5.25rem);
     }
 
-    /* Scroll cue pinned to the bottom of any block */
+    /* Scroll cue pinned to the bottom of any block — mirrors .scroll-cue */
     .block-cue {
       position: absolute;
       left: 50%;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 2rem);
       transform: translateX(-50%);
       display: inline-flex;
       align-items: center;
       gap: 8px;
       font-family: var(--sans);
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 400;
       color: var(--black);
       text-decoration: none;
@@ -83,13 +84,13 @@
     }
 
     .block-cue .scroll-arrow {
-      width: 22px;
-      height: 22px;
+      width: 28px;
+      height: 28px;
     }
 
     .block-cue .scroll-arrow svg {
-      width: 14px;
-      height: 14px;
+      width: 12px;
+      height: 12px;
     }
 
     /* ── LANDING ── */
@@ -145,9 +146,47 @@
       color: var(black);
     }
 
+    .marquee-bar {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 3rem);
+      left: 0;
+      right: 0;
+      z-index: 49;
+      background: var(--gray-300);
+      overflow: hidden;
+      white-space: nowrap;
+      padding: 6px 0;
+    }
+
+    .marquee-track {
+      display: inline-flex;
+      animation: marquee-scroll 50s linear infinite;
+      font-family: var(--serif);
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      color: var(--white);
+    }
+
+    .marquee-track > span {
+      flex-shrink: 0;
+      padding-right: 3em;
+    }
+
+    .marquee-track em {
+      font-style: italic;
+      color: inherit;
+      padding: 0 0.5em;
+    }
+
+    @keyframes marquee-scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
     .landing-headline {
       font-family: var(--sans);
       font-size: clamp(46px, 13vw, 68px);
+      font-style: italic;
       font-weight: 300;
       line-height: 1.0;
       letter-spacing: -0.025em;
@@ -232,7 +271,6 @@
       font-family: var(--sans);
       font-size: 14px;
       font-weight: 400;
-      letter-spacing: 0.05em;
       color: var(--black);
       text-decoration: none;
     }
@@ -271,7 +309,7 @@
       /* ↓ The LAST padding value controls how low the bio sits.
            Smaller value = bio sits CLOSER to the scroll cue.
            Don't go below ~3rem or it will collide with the scroll cue. */
-      padding: 1.5rem 1.5rem 4.5rem;
+      padding: 1.5rem 1.5rem 1rem;
       text-align: center;
       gap: 0rem;
     }
@@ -284,9 +322,59 @@
       margin-bottom: 1.25rem;
     }
 
-    .current-bottom .artist-bio {
+    .current-bottom .artist-bio,
+    .current-bottom .artist-bio-en {
+      margin-top: 0;
       margin-bottom: 0;
     }
+
+    /* Swap SV/EN bios in place, driven by data-lang on .current-bottom. */
+    .current-bottom[data-lang="sv"] .artist-bio-en { display: none; }
+    .current-bottom[data-lang="en"] .artist-bio    { display: none; }
+
+    /* Row that holds the artist links (left) and the EN/SV button (right). */
+    .current-bottom .artist-meta {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      max-width: 560px;
+      margin: 2rem auto 1.5rem;
+      text-align: left;
+    }
+    .current-bottom .artist-meta .artist-links {
+      margin: 0;
+      flex: 1 1 auto;
+    }
+    .current-bottom .lang-switch-inline {
+      margin-left: auto;
+      align-self: flex-start;
+    }
+
+    /* Small inline language toggle (current-artist + about sections). */
+    .lang-switch-inline {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: 1px solid var(--gray-300);
+      /* Horizontally-stretched ellipse: 50% radius on an asymmetric box.
+         Tweak `min-width` (how wide) or `padding` block (how tall) to taste. */
+      border-radius: 50%;
+      padding: 6px 20px;
+      min-width: 64px;
+      cursor: pointer;
+      font-family: var(--sans);
+      font-size: 13px;
+      text-transform: uppercase;
+      color: var(--gray-500);
+      transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .lang-switch-inline:hover {
+      color: var(--black);
+      border-color: var(--black);
+    }
+    .current-bottom[data-lang="en"] .lang-switch-inline { color: var(--black); border-color: var(--black); }
 
     .section-label {
 
@@ -463,15 +551,77 @@
 
     .artist-bio-en {
       font-family: var(--sans);
-      font-size: 16px;
+      font-size: 15px;
       font-style: italic;
       font-weight: 300;
       line-height: 2;
-      color: #808080;
+      color: var(--gray-700);
       text-align: left;
       max-width: 560px;
       margin: 1.5rem auto 1.5rem;
     }
+
+    /* ── LANGUAGE TOGGLE (collapsed English) ── */
+    .lang-toggle {
+      max-width: 560px;
+      margin: 0 auto 1.5rem;
+      text-align: center;
+    }
+    .lang-toggle > summary {
+      cursor: pointer;
+      font-family: var(--sans);
+      font-size: 15px;
+      color: var(--gray-500);
+      list-style: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5em;
+      padding: 1em 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .lang-toggle > summary::-webkit-details-marker { display: none; }
+    .lang-toggle > summary::after {
+      content: '▾';
+      font-size: 9px;
+      transition: transform 0.2s ease;
+    }
+    .lang-toggle[open] > summary::after { transform: rotate(180deg); }
+    .lang-toggle > summary:hover { color: var(--black); }
+    .lang-toggle[open] > summary { color: var(--black); }
+    .lang-toggle > .artist-bio-en,
+    .lang-toggle > .modal-bio-en,
+    .lang-toggle > .about-text-en {
+      margin-top: 0.5rem;
+    }
+
+    /* ── ARTIST LINKS (instagram / website) ── */
+    .artist-links,
+    .modal-links {
+      font-family: var(--sans);
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      color: var(--gray-700);
+      text-align: left;
+      max-width: 560px;
+      margin: 2rem auto 1.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+    .artist-links:empty,
+    .modal-links:empty { display: none; }
+    .artist-links a,
+    .modal-links a {
+      color: var(--black);
+      text-decoration: none;
+      border-bottom: 1px solid var(--gray-300);
+      padding-bottom: 1px;
+      transition: border-color 0.15s ease;
+    }
+    .artist-links a:hover,
+    .modal-links a:hover { border-color: var(--black); }
 
     .remix-note {
       font-family: var(--serif);
@@ -728,11 +878,37 @@
       font-size: 13px;
       font-style: italic;
       font-weight: 300;
-      line-height: 2.2;
-      color: #808080;
+      line-height: 2;
+      color: var(--gray-700);
       text-align: left;
       max-width: 560px;
-      margin: 0 0 1.25rem;
+      margin: 1.5rem 0 1.25rem;
+    }
+
+    /* Modal language swap — show only the language that matches data-lang. */
+    .modal-inner[data-lang="sv"] .modal-bio-en { display: none; }
+    .modal-inner[data-lang="en"] .modal-bio    { display: none; }
+
+    /* Modal: links column on the left, EN/SV ellipse button on the right. */
+    .modal-meta {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      max-width: 560px;
+      margin: 2rem auto 1.5rem;
+      text-align: left;
+    }
+    .modal-meta .modal-links {
+      margin: 0;
+      flex: 1 1 auto;
+    }
+    .modal-meta .lang-switch-inline {
+      margin-left: auto;
+      align-self: flex-start;
+    }
+    .modal-inner[data-lang="en"] .lang-switch-inline {
+      color: var(--black);
+      border-color: var(--black);
     }
 
     .modal-remix {
@@ -770,7 +946,7 @@
     /* ── SCHEDULE + ABOUT BLOCK ── */
     .schedule-block {
       justify-content: center;
-      padding: 2rem 1.5rem 5.5rem;
+      padding: 1rem 1.5rem 5.5rem;
       gap: 3rem;
     }
 
@@ -805,23 +981,8 @@
       }
     }
 
+    /* Schedule-hint marquee — mirrors the nav marquee style and speed. */
     .schedule-hint {
-      font-family: var(--serif);
-      font-size: 15px;
-      font-style: italic;
-      letter-spacing: 0.04em;
-      color: var(--gray-500);
-      margin-top: -1rem;
-      margin-bottom: 1rem;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-    .schedule-hint-en {
-      font-family: var(--sans);
-      font-size: 13.5px;
-      font-style: italic;
-      letter-spacing: 0.04em;
-      color: var(--gray-500);
       margin-top: -1rem;
       margin-bottom: 1rem;
       overflow: hidden;
@@ -831,24 +992,33 @@
     .schedule-hint-sv {
       font-family: var(--serif);
       font-size: 15px;
-      font-style: normal;
-      letter-spacing: 0.04em;
+      font-style: italic;
       color: var(--black);
-      margin-top: -1rem;
-      margin-bottom: 1rem;
-      overflow: hidden;
-      white-space: nowrap;
+    }
+
+    .schedule-hint-en {
+      font-family: var(--sans);
+      font-size: 13px;
+      font-style: italic;
+      color: var(--gray-700);
+    }
+
+    .schedule-hint-sep {
+      font-family: var(--sans);
+      font-size: 13px;
+      color: var(--gray-700);
+      letter-spacing: 0;
     }
 
     .schedule-hint-track {
       display: inline-flex;
-      animation: schedule-hint-marquee 14s linear infinite;
+      animation: schedule-hint-marquee 15s linear infinite;
       /* hover to pause if you ever want it */
     }
 
     .schedule-hint-track > span {
       flex-shrink: 0;
-      padding-right: 2em;
+      padding-right: 3em;
     }
 
     @keyframes schedule-hint-marquee {
@@ -935,10 +1105,31 @@
       font-style: italic;
       font-size: 13px;
       line-height: 2.2;
-      color: var(--gray-500);
+      color: var(--gray-700);
       text-align: left;
       max-width: 560px;
       margin: 0 auto 1.25rem;
+    }
+
+    /* Swap SV/EN about copy in place, driven by data-lang on .about-section. */
+    .about-section[data-lang="sv"] .about-text-en { display: none; }
+    .about-section[data-lang="en"] .about-text    { display: none; }
+
+    /* Header row that holds the "Om projektet" label and the EN/SV button. */
+    .about-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      max-width: 560px;
+      margin: 0 auto 2rem;
+    }
+    .about-header .section-label {
+      margin: 0;
+    }
+    .about-section[data-lang="en"] .lang-switch-inline {
+      color: var(--black);
+      border-color: var(--black);
     }
 
     .sub-about {
@@ -1080,6 +1271,7 @@
       overflow-y: auto;
     }
     .debug-panel.collapsed .debug-content { display: none; }
+    .debug-panel.hidden { display: none; }
     .debug-btn {
       background: transparent;
       border: none;
@@ -1102,8 +1294,8 @@
 </head>
 <body>
 
-  <!-- Debug panel (collapsible). Remove this whole <div> in production. -->
-  <div id="debugPanel" class="debug-panel collapsed">
+  <!-- Debug panel (hidden by default; toggle by typing "debug" or pressing Shift+D). -->
+  <div id="debugPanel" class="debug-panel collapsed hidden">
     <button class="debug-toggle" type="button">▸ Debug · välj konstnär</button>
     <div class="debug-content"></div>
   </div>
@@ -1115,6 +1307,11 @@
     <span class="nav-date" id="navDate"></span>
   </div>
 
+  <!-- Marquee bar (sits just below the top nav) -->
+  <div class="marquee-bar" aria-hidden="true">
+    <div class="marquee-track" id="marqueeTrack"></div>
+  </div>
+
   <!-- ── BLOCK 1 · LANDING ── -->
   <section class="block landing" id="top">
     <div class="landing-top">
@@ -1123,7 +1320,7 @@
         <h1 class="landing-headline">I Mellanrummet</h1>
         <h2 class="landing-subheadline">In the space between</h2>
         <p class="landing-bio">
-        I Mellanrummet samlar 10 konstnärer som genom sina unika ingrepp utforskar det kollektiva skapandets kraft. Följ processen på plats på Åsögatan 122, där fönstret byter skepnad var 48:e timme fram till den slutgiltiga installationen den 7 juni.
+        <em>I Mellanrummet</em> samlar 10 konstnärer som genom sina unika ingrepp utforskar det kollektiva skapandets kraft. Följ processen på plats på Åsögatan 122, där fönstret byter skepnad var 48:e timme fram till den slutgiltiga installationen den 7 juni.
        <!-- <em>Ten artists. One wall. Three weeks. Each responds to the previous.</em>-->
       </p>
       </div>
@@ -1153,10 +1350,14 @@
       <h2 class="artist-name" id="currentName">—</h2>
     </div>
 
-    <div class="current-bottom">
+    <div class="current-bottom" id="currentBottom" data-lang="sv">
       <!--<p class="field-label">Om konstnären</p> -->
       <p class="artist-bio" id="currentBio"></p>
       <p class="artist-bio-en" id="currentBioEn"></p>
+      <div class="artist-meta">
+        <div class="artist-links" id="currentLinks"></div>
+        <button class="lang-switch-inline" id="currentLangSwitch" type="button">EN</button>
+      </div>
     </div>
 
     <a class="block-cue" href="#info">
@@ -1172,28 +1373,35 @@
   <!-- ── BLOCK 3 · SCHEDULE + ABOUT ── -->
   <section class="block schedule-block" id="info">
     <div class="schedule-section">
-      <p class="section-label">Schema</p>
+      <p class="section-label" id="scheduleLabel">Schema</p>
       <p class="schedule-hint" aria-label="Tryck för mer info">
         <span class="schedule-hint-track" aria-hidden="true">
           <!-- Keep the count even (SV+EN pair, repeated) so the loop is seamless. -->
           <span class="schedule-hint-sv">Tryck för mer info</span>
+          <span class="schedule-hint-sep" aria-hidden="true">&darr;</span>
           <span class="schedule-hint-en">Click for more info</span>
+          <span class="schedule-hint-sep" aria-hidden="true">&darr;</span>
           <span class="schedule-hint-sv">Tryck för mer info</span>
+          <span class="schedule-hint-sep" aria-hidden="true">&darr;</span>
           <span class="schedule-hint-en">Click for more info</span>
+          <span class="schedule-hint-sep" aria-hidden="true">&darr;</span>
         </span>
       </p>
       <div class="schedule-list" id="scheduleList"></div>
     </div>
 
-    <div class="about-section">
-      <p class="section-label">Om projektet</p>
+    <div class="about-section" id="aboutSection" data-lang="sv">
+      <div class="about-header">
+        <p class="section-label" id="aboutLabel">Om projektet</p>
+        <button class="lang-switch-inline" id="aboutLangSwitch" type="button">EN</button>
+      </div>
       <p class="about-text">
-        Vad händer med ett konstverk när det upphör att tillhöra en enskild individ och istället blir en del av ett gemensamt kretslopp? I en tid där konstscenen präglas av exklusivitet och mätbarhet, går projektet I Mellanrummet i motsatt riktning. Genom att hylla process framför slutprodukt och det kollektiva framför det privata, möjliggör vi en plats där kontrollen förflyttas som en stafettpinne mellan deltagande konstnärer. Här finns inget konstant; istället befinner sig utställningen i mellanrummet – i ett tillstånd av konstant förändring.
-      <br><br>Tio konstnärer är redo att delta i en kedjereaktion av skapande i ett kvadratmeterstort fönster på Södermalm. Varannan dag öppnas dörren för en ny konstnär som inte bara adderar, utan även transformerar föregående verk till sitt eget. På så vis skapas en ordlös ständigt pågående dialog. Det blir en övning i att släppa taget och låta verket leva sitt eget liv genom andras händer. 
+        Vad händer med ett konstverk när det upphör att tillhöra en enskild individ och istället blir en del av ett gemensamt kretslopp? I en tid där konstscenen präglas av exklusivitet och mätbarhet, går projektet <em>I Mellanrummet</em> i motsatt riktning. Genom att hylla process framför slutprodukt och det kollektiva framför det privata, möjliggör vi en plats där kontrollen förflyttas som en stafettpinne mellan deltagande konstnärer. Här finns inget konstant; istället befinner sig utställningen i <em>mellanrummet</em> – i ett tillstånd av konstant förändring.
+      <br><br>Tio konstnärer är redo att delta i en kedjereaktion av skapande i ett kvadratmeterstort fönster på Södermalm. Varannan dag öppnas dörren för en ny konstnär som inte bara adderar, utan även transformerar föregående verk till sitt eget. På så vis skapas en ordlös ständigt pågående dialog. Det blir en övning i att släppa taget och låta verket leva sitt eget liv genom andras händer.
 
 
       </p>
-      <p class="about-text-en">What happens to an artwork when it ceases to belong to a single individual and instead becomes part of a shared cycle? In a time when the art scene is characterized by exclusivity and measurability, the project I Mellanrummet moves in the opposite direction. By valuing process over final product and the collective over the private, we create a space where control is passed along between participating artists. Nothing here is constant; instead, the exhibition exists in the in-between — a state of continuous transformation.
+      <p class="about-text-en">What happens to an artwork when it ceases to belong to a single individual and instead becomes part of a shared cycle? In a time when the art scene is characterized by exclusivity and measurability, the project <em>I Mellanrummet</em> moves in the opposite direction. By valuing process over final product and the collective over the private, we create a space where control is passed along between participating artists. Nothing here is constant; instead, the exhibition exists in the in-between — a state of continuous transformation.
       <br><br>Ten artists are ready to take part in a chain reaction of creation within a one-square-meter window on Södermalm. Every other day, the door opens for a new artist who not only adds to, but also transforms the previous work into their own. In this way, a wordless, ongoing dialogue emerges. It becomes an exercise in letting go and allowing the work to live its own life through the hands of others.
       </p>
       <p class="sub-about">Kurerad och på initiativ av Linnea Wästfelt</p>
@@ -1219,13 +1427,17 @@
           <line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/>
         </svg>
       </button>
-      <div class="modal-inner">
+      <div class="modal-inner" id="modalInner" data-lang="sv">
         <p class="modal-dates" id="modalDates"></p>
         <h2 class="modal-name" id="modalName"></h2>
 
         <!-- <p class="field-label">Om konstnären</p> -->
         <p class="modal-bio" id="modalBio"></p>
         <p class="modal-bio-en" id="modalBioEn"></p>
+        <div class="modal-meta">
+          <div class="modal-links" id="modalLinks"></div>
+          <button class="lang-switch-inline" id="modalLangSwitch" type="button">EN</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1250,7 +1462,8 @@
        Each artist gets a 2-day slot starting on `start`.
        Fields:
          name        – Display name
-         handle      – Instagram handle (with @)
+         handle      – Instagram handle (with @) — leave "" for none
+         website     – Full URL to the artist's website (e.g. "https://…") — leave "" for none
          bio         – Bilingual bio text (shown in Swedish / English)
          remixOf     – Name of the artist being responded to (or null for first)
          remixDesc   – Brief description of what was responded to
@@ -1269,11 +1482,12 @@ Different materialities and forms of expression intersect in Bergman's practice.
         remixOf: null,
         remixDesc: null,
         start: "2026-05-20",
+        website: "",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
         name: "Theodore Trottner",
-        handle: "@theodoretrottner",
+        handle: "@eat_my_jpg",
         bio: `Theodore Trottner (f. 1986) har en magisterexamen i ljudkonst från Stockholms konstnärliga högskola samt en masterexamen i fri konst från Kungl. Konsthögskolan i Stockholm. Trottner arbetar främst med installationer i olika former, där ljudet står i centrum. Hans praktik har under de senaste åren präglats av skapandet av ljudinstallationer och performativa verk som undersöker lyssnandets rumslighet och exklusivitet. 
         
         I Mellanrummet bidrar Trottner med en ljudinstallation som aktiveras av såväl de övriga konstnärerna som besökare som går förbi fönstret. Genom en transducerhögtalare inkorporeras även själva fönsterrutan som ett instrument och en del av verkets ljudkropp. / Theodore Trottner (b. 1986) holds a Master's degree in Sound Art from Stockholm University of the Arts as well as a Master's degree in Fine Arts from Royal Institute of Art. Trottner primarily works with installations in various forms, with sound at the center of his practice. In recent years, his work has been characterized by the creation of sound installations and performative works that explore the spatiality and exclusivity of listening. 
@@ -1282,11 +1496,12 @@ Different materialities and forms of expression intersect in Bergman's practice.
         remixOf: "Hedvig Bergman",
         remixDesc: "horsehair and stories of brushmaking",
         start: "2026-05-22",
+        website: "https://www.trottner.se/",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
         name: "Maneka Ghosh",
-        handle: "@manekaghosh",
+        handle: "@maneka.ghosh",
         bio: `Maneka Ghosh (f. 1982) arbetar med textil och studerar för närvarande vid Handarbetets Vänner. Med lång erfarenhet av olika hantverksprocesser såsom metallsmide och väv arbetar Ghosh i skärningspunkten mellan konst och hantverk. Hennes praktik tar ofta form genom knutar, textilier och vävprocesser. 
         
         I Mellanrummet undersöker Ghosh pausen som tillstånd och uttryck. Genom reflektion och förändring bidrar hon med vävar som gestaltar vad en paus kan vara — och hur den kan ta form. / Maneka Ghosh (b. 1982) works with textiles and is currently studying at Handarbetets Vänner. With extensive experience in various craft processes such as metalworking and weaving, Ghosh works at the intersection of art and craft. Her practice often takes shape through knots, textiles, and weaving processes. 
@@ -1296,11 +1511,12 @@ Different materialities and forms of expression intersect in Bergman's practice.
         remixOf: "Theodore Trottner",
         remixDesc: "tactile sound activated by visitors",
         start: "2026-05-24",
+        website: "",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
         name: "Lior Nønne Malue Hansen",
-        handle: "@liornonnemaluehansen",
+        handle: "@ligeovermiddel",
         bio: `Lior Nønne Malue Hansen (f. 1989) har en masterexamen i fri konst från Kungl. Konsthögskolan i Stockholm och arbetar ofta i skärningspunkten mellan skulptur och installation. Hansens praktik utgår ofta från funna material med stark koppling till platsen där installationen tar form. 
         
         I Mellanrummet bidrar hon genom att förankrat det kollektiva verket i fönstret till den plats och tid där det uppstår. Genom installationen knyts de andra verken i fönstret samman till den rumslighet som fönstret tillåter. Hansen är även verksam på Korvfabriken, en nystartad kulturscen i Slakthusområdet. / Lior Nønne Malue Hansen (b. 1989) holds a Master’s degree in Fine Arts from Royal Institute of Art and often works at the intersection of sculpture and installation. Hansen’s practice frequently begins with found materials that maintain a strong connection to the site where the installation takes shape. 
@@ -1309,28 +1525,31 @@ Different materialities and forms of expression intersect in Bergman's practice.
         remixOf: "Maneka Ghosh",
         remixDesc: "woven textiles and rest-notes",
         start: "2026-05-26",
+        website: "",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
         name: "Indigo Booz",
-        handle: "@indigobooz",
+        handle: "@z.o.o.b",
         bio: `Indigo Booz (f. 1999) arbetar med måleri och installation där ramen ofta står i fokus. Indigo har en kandidatexamen i fri konst från Konstfack och ifrågasätter genom sitt konstnärskap vem som får synas i den offentliga bilden och hur den porträtteras. Indigo bidrar till mellanrummet med måleri som sker på plats i galleriet, där tavlan uppstår under installationen. Genom denna intervention i fönstret öppnas även upp för en dialog med omgivningen och besökare av platsen under tiden som den formas. / Indigo Booz (b. 1999) works with painting and installation, often placing the frame itself at the center of the work. Indigo holds a Bachelor’s degree in Fine Arts from Konstfack and uses their artistic practice to question who is allowed visibility in the public image and how that visibility is portrayed. 
         
         In Mellanrummet, Indigo contributes with a painting created on site in the gallery, where the artwork emerges during the installation process itself. Through this intervention in the window, a dialogue is also opened up with the surrounding environment and with visitors to the space as the work takes shape.`,
         remixOf: "Lior Nønne Malue Hansen",
         remixDesc: "site-responsive installation from neighbourhood materials",
         start: "2026-05-28",
+        website: "",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
         name: "Eric Sundevåg",
-        handle: "@ericsundevag",
+        handle: "@esundevag",
         bio: `Eric Sundevåg (f. 1993) har en kandidatexamen i fotografi från Akademin Valand och arbetar främst med fotografi, men även video och ljud förekommer i hans praktik. I sina verk återkommer Sundevåg ofta till teman som minne, tid och avstånd. Möten -  både verkliga och fiktiva - är ett genomgående inslag i hans praktik, och i Mellanrummet bidrar han med ett verk där mötet med de andra konstnärernas tidigare installationer står i fokus. / Eric Sundevåg (b. 1993) holds a Bachelor’s degree in Photography from Academy Valand and primarily works with photography, though video and sound also appear in his practice. In his works, Sundevåg often returns to themes such as memory, time, and distance. Encounters — both real and fictional — are a recurring element in his artistic practice. 
         
         In Mellanrummet, he contributes a work that focuses on the encounter with the previous installations created by the other participating artists.`,
         remixOf: "Indigo Booz",
         remixDesc: "on-site painting and public portraiture",
         start: "2026-05-30",
+        website: "",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
@@ -1342,11 +1561,12 @@ Different materialities and forms of expression intersect in Bergman's practice.
         remixOf: "Eric Sundevåg",
         remixDesc: "photographic installation made of hair",
         start: "2026-06-01",
+        website: "https://isarobertini.com/ ",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
         name: "Sara Darle Olsson",
-        handle: "@saradarleolsson",
+        handle: "@saradarols",
         bio: `Sara Darle Olsson (f. 1999) är har en examen i Architectural Design på Gerrit Rietveld Academie i Amsterdam. I Darle Olssons praktik står platsen och i fokus. Genom installationer som går att montera ner och tas isär utan att materialet går till spillo skapar Darle Olsson installationer med återbruk i åtanke. 
         
         De senaste åren har Darle Olsson haft fokus på att arbeta i grupp och i föränderliga processer som skapar ett kollektiv och i Mellanrummet bidrar hon med en installation där de andras verk både står i fokus men även försvinner på olika sätt. / Sara Darle Olsson (b. 1999) holds a degree in Architectural Design from Gerrit Rietveld Academie. In Darle Olsson’s practice, site and spatial context are central. Through installations that can be dismantled and disassembled without wasting materials, she creates works with reuse and sustainability in mind. 
@@ -1355,11 +1575,12 @@ Different materialities and forms of expression intersect in Bergman's practice.
         remixOf: "Isa Robertini",
         remixDesc: "Sardinian-inspired pasta installation",
         start: "2026-06-03",
+        website: "https://saradarleolsson.com/",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
         name: "Vincent Duraud",
-        handle: "@vincentduraud",
+        handle: "@_powervacua",
         bio: `Vincent Duraud (f. 1986) arbetar främst med installationer, ofta uppbyggda av fragila material som delvis är genomskinliga eller som skapar nya sätt att se de redan existerande verken. 
         
         I Mellanrummet bidrar Duraud med en temporär vägg av posters, där postern används som medium för att väcka åtrå, längtan och minne, men också som en uppmaning till förändring. Temporaliteten i Durauds verk öppnar för förskjutning och omformning; genom att riva, bryta upp eller bygga vidare på installationen skapas ett tillstånd av ständig förändring. 
@@ -1372,17 +1593,19 @@ Different materialities and forms of expression intersect in Bergman's practice.
         remixOf: "Sara Darle Olsson",
         remixDesc: "found and existing materials",
         start: "2026-06-05",
+        website: "https://vincentduraud.xyz/ ",
         images: { main: "", thumb1: "", thumb2: "" }
       },
       {
         name: "Fältstudio",
-        handle: "@faltstudio",
+        handle: "@falt.studio",
         bio: `FÄLTSTUDIO är ett arkitektkollektiv beläget i Stockholm. De arbetar gemensamt för konstinstallationer och arkitektoniska interventioner. Till mellanrummet kommer de arbeta med spillmaterial från installationen av de övriga konstnärerna för att avsluta det gemensamma verket. Gruppen består i dagsläget av ett tiotal arkitekter som har ett kontor i Örnsbergs industriområde. / FÄLTSTUDIO is an architectural collective based in Stockholm. The group works collaboratively with art installations and architectural interventions. 
         
         For Mellanrummet, they will work with leftover materials from the installations of the other participating artists in order to complete the collective work. The group currently consists of around ten architects and is based in the Örnsbergs industrial area.`,
         remixOf: "Vincent Duraud",
         remixDesc: "ephemeral installation from simple covering materials",
         start: "2026-06-07",
+        website: "http://www.faltstudio.com/",
         images: { main: "", thumb1: "", thumb2: "" }
       }
     ];
@@ -1443,6 +1666,20 @@ Different materialities and forms of expression intersect in Bergman's practice.
     // ── POPULATE NAV DATE
     const navDate = document.getElementById('navDate');
     navDate.textContent = today().toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // ── POPULATE MARQUEE
+    const marqueeTrack = document.getElementById('marqueeTrack');
+    if (marqueeTrack) {
+      const tToday = today();
+      const upcomingArtist = ARTISTS.find(a => parseDate(a.start) >= tToday) || ARTISTS[0];
+      const vDate = parseDate(upcomingArtist.start);
+      const vDateStr = vDate.getDate() + '/' + (vDate.getMonth() + 1);
+      const msg = 'Öppet varje dag — dygnet runt' +
+        '<em>&#8594;</em>' +
+        'Nästa vernissage: ' + upcomingArtist.name + ' ' + vDateStr + ' 17:00 - 19:00';
+      // Repeat enough times to fill the viewport and loop seamlessly.
+      marqueeTrack.innerHTML = ('<span>' + msg + '</span>').repeat(6);
+    }
 
     // ── LETTER ANIMATION (step-based, no smooth transitions)
     // 1) Letters appear ONE AT A TIME in random order, scattered around the
@@ -1628,6 +1865,25 @@ Different materialities and forms of expression intersect in Bergman's practice.
       observer.observe(target);
     })();
 
+    // Trigger the letter animation on the Schema and Om projektet labels
+    // the first time each one scrolls into view.
+    (function setupSectionLabelAnimations() {
+      if (!('IntersectionObserver' in window)) return;
+      ['#scheduleLabel', '#aboutLabel'].forEach((sel) => {
+        const el = document.querySelector(sel);
+        if (!el) return;
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              animateLetters(sel, FAST_LETTER_OPTS);
+              observer.disconnect();
+            }
+          });
+        }, { threshold: 0.5 });
+        observer.observe(el);
+      });
+    })();
+
     // Reveal the rest of the page right as the last letter finishes settling.
     // For "Mellanrummet" (12 chars) the headline animation ends at roughly:
     //   12 * APPEAR_STEP (1680) + PAUSE_BETWEEN (400) + 11 * SETTLE_STEP (1980)
@@ -1651,13 +1907,52 @@ Different materialities and forms of expression intersect in Bergman's practice.
     // Accepts ALL of these as line breaks so it just works no matter how you
     // write them: a real newline (template literal `…`), an escape sequence
     // (\n in a regular "…" string), or a literal backslash+n (\\n).
+    // Also italicizes the project name ("Mellanrummet", including the
+    // "I Mellanrummet" form with capital I).
     function renderText(text) {
       return String(text || '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/\r\n|\r|\n|\\n/g, '<br>');
+        .replace(/\r\n|\r|\n|\\n/g, '<br>')
+        .replace(/\b(I )?Mellanrummet\b/g, '<em>$&</em>');
+    }
+
+    function escapeAttr(s) {
+      return String(s || '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    // Builds the links row from an artist record. Instagram sits on the left
+    // and the website is pushed to the right (via `.artist-link--website`).
+    // Returns "" when neither field is set so :empty hides the container.
+    function renderArtistLinks(artist) {
+      if (!artist) return '';
+      const items = [];
+      if (artist.handle) {
+        const cleanHandle = String(artist.handle).replace(/^@/, '').trim();
+        if (cleanHandle) {
+          items.push(
+            '<a class="artist-link--instagram" href="https://instagram.com/' +
+            encodeURIComponent(cleanHandle) +
+            '" target="_blank" rel="noopener">@' + escapeAttr(cleanHandle) + '</a>'
+          );
+        }
+      }
+      if (artist.website) {
+        const raw = String(artist.website).trim();
+        const href = /^https?:\/\//i.test(raw) ? raw : 'https://' + raw;
+        const label = raw.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+        items.push(
+          '<a class="artist-link--website" href="' + escapeAttr(href) +
+          '" target="_blank" rel="noopener">' + escapeAttr(label) + '</a>'
+        );
+      }
+      return items.join('');
     }
 
     // ── CURRENT SECTION
@@ -1666,6 +1961,33 @@ Different materialities and forms of expression intersect in Bergman's practice.
     const currentBioParts = splitBio(current.bio);
     document.getElementById('currentBio').innerHTML = renderText(currentBioParts.sv);
     document.getElementById('currentBioEn').innerHTML = renderText(currentBioParts.en);
+    document.getElementById('currentLinks').innerHTML = renderArtistLinks(current);
+
+    // Inline EN/SV toggle for the current-artist card. Mirrors the modal:
+    // flips data-lang on .current-bottom and swaps the button label.
+    const currentBottom     = document.getElementById('currentBottom');
+    const currentLangSwitch = document.getElementById('currentLangSwitch');
+    function setCurrentLang(lang) {
+      if (!currentBottom) return;
+      currentBottom.dataset.lang = lang;
+      if (currentLangSwitch) currentLangSwitch.textContent = lang === 'sv' ? 'EN' : 'SV';
+    }
+    if (currentLangSwitch) {
+      currentLangSwitch.addEventListener('click', () => {
+        setCurrentLang(currentBottom.dataset.lang === 'sv' ? 'en' : 'sv');
+      });
+    }
+
+    // Same EN/SV toggle for the "Om projektet" section.
+    const aboutSection    = document.getElementById('aboutSection');
+    const aboutLangSwitch = document.getElementById('aboutLangSwitch');
+    if (aboutSection && aboutLangSwitch) {
+      aboutLangSwitch.addEventListener('click', () => {
+        const next = aboutSection.dataset.lang === 'sv' ? 'en' : 'sv';
+        aboutSection.dataset.lang = next;
+        aboutLangSwitch.textContent = next === 'sv' ? 'EN' : 'SV';
+      });
+    }
 
     // Find the LARGEST font-size in [minSize, maxSize] that lets the element's
     // text fit on one line within the viewport (so on mobile the name reaches
@@ -1764,6 +2086,23 @@ Different materialities and forms of expression intersect in Bergman's practice.
     const overlay = document.getElementById('modalOverlay');
     const sheet   = document.getElementById('modalSheet');
 
+    // Switches the modal between Swedish and English. The CSS hides whichever
+    // bio doesn't match the current data-lang on .modal-inner.
+    const modalInner      = document.getElementById('modalInner');
+    const modalLangSwitch = document.getElementById('modalLangSwitch');
+    function setModalLang(lang) {
+      if (!modalInner) return;
+      modalInner.dataset.lang = lang;
+      if (modalLangSwitch) {
+        modalLangSwitch.textContent = lang === 'sv' ? 'EN' : 'SV';
+      }
+    }
+    if (modalLangSwitch) {
+      modalLangSwitch.addEventListener('click', () => {
+        setModalLang(modalInner.dataset.lang === 'sv' ? 'en' : 'sv');
+      });
+    }
+
     function openModal(artist, slotNum) {
       // FINISSAGE has its own `dateLabel` ("8.6"); artists use the slot range.
       document.getElementById('modalDates').textContent =
@@ -1773,6 +2112,9 @@ Different materialities and forms of expression intersect in Bergman's practice.
       const modalBioParts = splitBio(artist.bio);
       document.getElementById('modalBio').innerHTML = renderText(modalBioParts.sv);
       document.getElementById('modalBioEn').innerHTML = renderText(modalBioParts.en);
+      document.getElementById('modalLinks').innerHTML = renderArtistLinks(artist);
+      // Reset the modal's language to Swedish each time it opens.
+      setModalLang('sv');
 
       sheet.scrollTop = 0;
       overlay.classList.add('open');
@@ -1858,6 +2200,53 @@ Different materialities and forms of expression intersect in Bergman's practice.
         toggle.textContent = (collapsed ? '▸' : '▾') + ' Debug · välj konstnär';
       });
 
+      // Reveal/hide the debug panel via keyboard. Triggers:
+      //   • Shift+D (when nothing editable is focused)
+      //   • Typing the sequence "debug" within 1.5s
+      //   • URL hash #debug (also persisted while the hash is set)
+      function showPanel() {
+        panel.classList.remove('hidden');
+        panel.classList.remove('collapsed');
+        toggle.textContent = '▾ Debug · välj konstnär';
+      }
+      function togglePanel() {
+        if (panel.classList.contains('hidden')) {
+          showPanel();
+        } else {
+          panel.classList.add('hidden');
+        }
+      }
+
+      if (location.hash === '#debug') showPanel();
+
+      let typed = '';
+      let typedTimer = null;
+      document.addEventListener('keydown', (e) => {
+        const tgt = e.target;
+        const editable = tgt && (
+          tgt.tagName === 'INPUT' ||
+          tgt.tagName === 'TEXTAREA' ||
+          tgt.isContentEditable
+        );
+        if (editable) return;
+
+        if (e.key === 'D' && e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          e.preventDefault();
+          togglePanel();
+          return;
+        }
+
+        if (e.key && e.key.length === 1) {
+          typed = (typed + e.key.toLowerCase()).slice(-5);
+          clearTimeout(typedTimer);
+          typedTimer = setTimeout(() => { typed = ''; }, 1500);
+          if (typed === 'debug') {
+            typed = '';
+            togglePanel();
+          }
+        }
+      });
+
       function makeBtn(label, handler, isActive) {
         const btn = document.createElement('button');
         btn.className = 'debug-btn' + (isActive ? ' active' : '');
@@ -1899,6 +2288,9 @@ Different materialities and forms of expression intersect in Bergman's practice.
       const parts = splitBio(artist.bio);
       document.getElementById('currentBio').innerHTML = renderText(parts.sv);
       document.getElementById('currentBioEn').innerHTML = renderText(parts.en);
+      document.getElementById('currentLinks').innerHTML = renderArtistLinks(artist);
+      // Reset to Swedish whenever the debug previewer swaps the current artist.
+      setCurrentLang('sv');
 
       // Update the schedule rows so the new artist is marked .current and the
       // ones before it become .past.
