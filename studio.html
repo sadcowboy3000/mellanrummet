@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Studio · I Mellanrummet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+  <script type="importmap">
+  {
+    "imports": {
+      "tweakpane": "https://esm.sh/tweakpane@4.0.4",
+      "@tweakpane/plugin-essentials": "https://esm.sh/@tweakpane/plugin-essentials@0.2.1"
+    }
+  }
+  </script>
+  <style>
+    :root {
+      --black: #0a0a0a;
+      --white: #f8f6f2;
+      --gray-100: #ede9e3;
+      --gray-300: #c8c3bc;
+      --gray-500: #8f8880;
+      --gray-700: #4a4540;
+      --Tsans: 'Times New Roman', serif;
+      --serif: 'Times New Roman', Times, serif;
+      --sans: 'Open Sans', sans-serif;
+
+      --ui-bg: #141414;
+      --ui-panel: #1e1e1e;
+      --ui-text: #e8e8e8;
+      --ui-muted: #888;
+      --ui-accent: #c8c3bc;
+      --ui-border: #2a2a2a;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: var(--ui-bg);
+      color: var(--ui-text);
+      font-family: var(--sans);
+      font-size: 13px;
+      overflow: hidden;
+    }
+
+    .studio {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      height: 100vh;
+    }
+
+    /* ── CONTROLS PANEL ──────────────────────────────────────────────── */
+    .controls {
+      background: var(--ui-panel);
+      border-right: 1px solid var(--ui-border);
+      overflow-y: auto;
+      padding: 1rem 1rem 4rem;
+    }
+    .controls h1 {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ui-muted);
+      margin: 0 0 1rem;
+    }
+    .controls h1 small {
+      font-weight: 400;
+      letter-spacing: 0;
+      text-transform: none;
+      display: block;
+      color: #555;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .selected-text {
+      margin-bottom: 1rem;
+    }
+    .selected-text label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ui-muted);
+      margin-bottom: 4px;
+    }
+    .selected-text textarea {
+      width: 100%;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      color: var(--ui-text);
+      font: inherit;
+      padding: 6px 8px;
+      border-radius: 2px;
+      resize: vertical;
+      min-height: 64px;
+      font-family: var(--sans);
+    }
+    .selected-text textarea:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    #pane { width: 100%; }
+
+    /* ── STAGE ──────────────────────────────────────────────────────── */
+    .stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      gap: 1rem;
+      min-width: 0;
+      position: relative;
+    }
+    .canvas-wrap {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 0;
+      position: relative;
+    }
+    #canvas {
+      background: var(--white);
+      box-shadow: 0 4px 32px rgba(0,0,0,0.4);
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+      cursor: default;
+      touch-action: none;
+    }
+    #canvas.draggable { cursor: grab; }
+    #canvas.dragging { cursor: grabbing; }
+
+    .stage-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .stage-controls button {
+      background: #2a2a2a;
+      border: 1px solid #333;
+      color: var(--ui-text);
+      font: inherit;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+    .stage-controls button:hover { background: #353535; }
+
+    .stage-info {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      color: var(--ui-muted);
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+      pointer-events: none;
+    }
+    .recording-indicator {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      color: #ff5555;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .recording-indicator.on { display: flex; }
+    .recording-indicator::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ff5555;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink { 50% { opacity: 0.3; } }
+
+    .hint {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      color: var(--ui-muted);
+      font-size: 11px;
+      pointer-events: none;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+  <div class="studio">
+
+    <aside class="controls">
+      <h1>Studio
+        <small>i mellanrummet · social composer</small>
+      </h1>
+      <div class="selected-text">
+        <label>Selected text <span id="selectedTextHint" style="color:#555">(click a text element)</span></label>
+        <textarea id="selectedText" disabled placeholder="Click a text element on the canvas to edit its content here."></textarea>
+      </div>
+      <div id="pane"></div>
+    </aside>
+
+    <main class="stage">
+      <div class="hint">Click to select · drag to move · Delete to remove</div>
+      <div class="canvas-wrap">
+        <canvas id="canvas" width="1080" height="1920"></canvas>
+      </div>
+      <div class="stage-controls">
+        <button id="play">▶ Play</button>
+        <button id="reset">↺ Reset</button>
+      </div>
+      <div class="stage-info" id="stageInfo">1080 × 1920</div>
+      <div class="recording-indicator" id="recIndicator">Recording</div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { Pane } from 'tweakpane';
+    import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
+
+    // ── PALETTE ─────────────────────────────────────────────────────────
+    const PALETTE = {
+      black:    '#0a0a0a',
+      white:    '#f8f6f2',
+      'gray-100': '#ede9e3',
+      'gray-300': '#c8c3bc',
+      'gray-500': '#8f8880',
+      'gray-700': '#4a4540'
+    };
+    // Tweakpane options object format: { displayLabel: value }
+    const PALETTE_OPTS = {
+      White:    'white',
+      Black:    'black',
+      'Gray 100': 'gray-100',
+      'Gray 300': 'gray-300',
+      'Gray 500': 'gray-500',
+      'Gray 700': 'gray-700'
+    };
+
+    const FONTS = {
+      Tsans:  'Times New Roman, serif',
+      serif:  'Times New Roman, Times, serif',
+      sans:   'Open Sans, sans-serif'
+    };
+    const FONT_OPTS = { Tsans: 'Tsans', Serif: 'serif', Sans: 'sans' };
+    const WEIGHT_OPTS = { '300': 300, '400': 400, '500': 500, '600': 600, '700': 700 };
+    const ALIGN_OPTS  = { Left: 'left', Center: 'center', Right: 'right' };
+    const ASPECT_OPTS = { '9:16':'9:16', '16:9':'16:9', '3:4':'3:4', '4:3':'4:3', '4:5':'4:5', '1:1':'1:1' };
+
+    // ── LOGO LETTER LAYOUT ─────────────────────────────────────────────
+    const LOGO_W = 1914;
+    const LOGO_H = 491;
+    const LOGO_POS = [
+      { src: 'assets/LogoFont/Mellanrummet-_0000__1.png', x: 0,    y: 53,  w: 135, h: 247 },
+      { src: 'assets/LogoFont/Mellanrummet-_0001_i.png',  x: 108,  y: 42,  w: 246, h: 408 },
+      { src: 'assets/LogoFont/Mellanrummet-_0002_m.png',  x: 217,  y: 131, w: 292, h: 347 },
+      { src: 'assets/LogoFont/Mellanrummet-_0003_e1.png', x: 421,  y: 118, w: 164, h: 333 },
+      { src: 'assets/LogoFont/Mellanrummet-_0004_l1.png', x: 566,  y: 42,  w: 106, h: 380 },
+      { src: 'assets/LogoFont/Mellanrummet-_0005_l2.png', x: 610,  y: 49,  w:  97, h: 348 },
+      { src: 'assets/LogoFont/Mellanrummet-_0006_a.png',  x: 687,  y: 105, w: 134, h: 269 },
+      { src: 'assets/LogoFont/Mellanrummet-_0007_n.png',  x: 816,  y: 104, w: 140, h: 294 },
+      { src: 'assets/LogoFont/Mellanrummet-_0008_r.png',  x: 932,  y: 90,  w: 226, h: 324 },
+      { src: 'assets/LogoFont/Mellanrummet-_0009_u.png',  x: 1044, y: 147, w: 164, h: 242 },
+      { src: 'assets/LogoFont/Mellanrummet-_0010_m1.png', x: 1181, y: 106, w: 173, h: 296 },
+      { src: 'assets/LogoFont/Mellanrummet-_0011_m2.png', x: 1327, y: 139, w: 178, h: 266 },
+      { src: 'assets/LogoFont/Mellanrummet-_0012_e2.png', x: 1474, y: 165, w: 149, h: 235 },
+      { src: 'assets/LogoFont/Mellanrummet-_0013_t.png',  x: 1604, y: 67,  w: 161, h: 324 },
+      { src: 'assets/LogoFont/Mellanrummet-_0014__2.png', x: 1769, y: 42,  w: 145, h: 118 }
+    ];
+    const LOGO_IMAGES = [];
+
+    // ── ASPECT → CANVAS SIZE ───────────────────────────────────────────
+    const ASPECTS = {
+      '9:16': [1080, 1920],
+      '16:9': [1920, 1080],
+      '3:4':  [1080, 1440],
+      '4:3':  [1440, 1080],
+      '4:5':  [1080, 1350],
+      '1:1':  [1080, 1080]
+    };
+
+    // ── ELEMENT FACTORIES ──────────────────────────────────────────────
+    let nextId = 1;
+    function makeText(opts = {}) {
+      return Object.assign({
+        id: 'el-' + (nextId++),
+        kind: 'text',
+        text: 'Text',
+        font: 'Tsans',
+        size: 0.060,        // fraction of canvas short edge
+        color: 'black',
+        weight: 400,
+        italic: false,
+        align: 'center',    // left | center | right (anchor at cx)
+        cx: 0.5,
+        cy: 0.5
+      }, opts);
+    }
+    function makeWordmark(opts = {}) {
+      return Object.assign({
+        id: 'el-' + (nextId++),
+        kind: 'wordmark',
+        width: 0.78,        // fraction of canvas width
+        cx: 0.5,
+        cy: 0.5
+      }, opts);
+    }
+
+    // ── PRESETS ────────────────────────────────────────────────────────
+    const PRESETS = {
+      'wordmark-hero': () => [
+        makeText({ text: '20.5–8.6',                     font: 'Tsans', size: 0.045, color: 'black', cx: 0.5, cy: 0.30 }),
+        makeWordmark({ width: 0.78,                                                                  cx: 0.5, cy: 0.50 }),
+        makeText({ text: 'En utställning i förändring',  font: 'sans',  size: 0.028, color: 'black', cx: 0.5, cy: 0.70 })
+      ],
+      'title-card': () => [
+        makeText({ text: 'I Mellanrummet',               font: 'Tsans', size: 0.090, color: 'black',     italic: true, cx: 0.5, cy: 0.40 }),
+        makeText({ text: 'En utställning i förändring',  font: 'sans',  size: 0.030, color: 'black',                  cx: 0.5, cy: 0.55 }),
+        makeText({ text: '20.5–8.6 · Åsögatan 122',      font: 'sans',  size: 0.022, color: 'gray-700',               cx: 0.5, cy: 0.68 })
+      ],
+      'schedule': () => [
+        makeText({ text: 'Fredag 23.5',                  font: 'Tsans', size: 0.085, color: 'black',     cx: 0.5, cy: 0.32 }),
+        makeText({ text: 'Vernissage 17–19\nHedvig Bergman', font: 'sans', size: 0.034, color: 'black', cx: 0.5, cy: 0.52 }),
+        makeWordmark({ width: 0.42,                                                                    cx: 0.5, cy: 0.86 })
+      ],
+      'wordmark-only': () => [
+        makeWordmark({ width: 0.82, cx: 0.5, cy: 0.5 })
+      ],
+      'blank': () => []
+    };
+
+    // ── STATE ──────────────────────────────────────────────────────────
+    const state = {
+      aspect: '9:16',
+      bg: 'white',
+      speed: 1.0,
+      duration: 8.0,
+      elements: PRESETS['wordmark-hero'](),
+      selectedIndex: -1
+    };
+
+    // ── DOM REFS ───────────────────────────────────────────────────────
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const stageInfo = document.getElementById('stageInfo');
+    const recIndicator = document.getElementById('recIndicator');
+    const selectedTextEl = document.getElementById('selectedText');
+    const selectedTextHint = document.getElementById('selectedTextHint');
+
+    // ── ANIMATION ──────────────────────────────────────────────────────
+    const ANIM_OPTS = {
+      appearStep:    60,
+      settleStep:    80,
+      pauseBetween:  150,
+      twoStepRatio:  0.4,
+      rotateDelayMin: 100,
+      rotateDelayMax: 350,
+      scatterX:      0.20,
+      scatterY:      0.15
+    };
+
+    let plans = []; // per-element animation plans
+    let animStart = null;
+
+    function rand() { return Math.random(); }
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+      }
+    }
+
+    function canvasFontFor(el) {
+      const style = el.italic ? 'italic' : 'normal';
+      const family = FONTS[el.font] || FONTS.sans;
+      const px = Math.round(el.size * Math.min(canvas.width, canvas.height));
+      return `${style} ${el.weight} ${px}px ${family}`;
+    }
+
+    function assignTimings(letters, cw, ch) {
+      for (const l of letters) {
+        l.dx = (rand() - 0.5) * ANIM_OPTS.scatterX * cw;
+        l.dy = (rand() - 0.5) * ANIM_OPTS.scatterY * ch;
+        l.rot = [0, 90, 180][Math.floor(rand() * 3)];
+        l.stayRotated = l.rot !== 0 && rand() < ANIM_OPTS.twoStepRatio;
+      }
+      const appearOrder = letters.slice();
+      shuffle(appearOrder);
+      appearOrder.forEach((l, n) => { l.appearAt = n * ANIM_OPTS.appearStep; });
+      const allVisibleAt = letters.length * ANIM_OPTS.appearStep + ANIM_OPTS.pauseBetween;
+      const settleOrder = letters.slice();
+      shuffle(settleOrder);
+      settleOrder.forEach((l, n) => {
+        l.settleAt = allVisibleAt + n * ANIM_OPTS.settleStep;
+        if (l.stayRotated) {
+          l.rotateAt = l.settleAt + ANIM_OPTS.rotateDelayMin +
+                       rand() * (ANIM_OPTS.rotateDelayMax - ANIM_OPTS.rotateDelayMin);
+        }
+      });
+    }
+
+    function buildPlans() {
+      plans = [];
+      const [cw, ch] = ASPECTS[state.aspect];
+
+      for (const el of state.elements) {
+        if (el.kind === 'text') {
+          if (!el.text) { plans.push({ el, letters: [] }); continue; }
+          const fontPx = Math.round(el.size * Math.min(cw, ch));
+          ctx.font = canvasFontFor(el);
+          const lines = el.text.split('\n');
+          const lineHeight = fontPx * 1.15;
+          const totalH = lineHeight * lines.length;
+          const anchorX = el.cx * cw;
+          const anchorY = el.cy * ch;
+
+          const letters = [];
+          for (let li = 0; li < lines.length; li++) {
+            const line = lines[li];
+            const lineW = ctx.measureText(line).width;
+            let startX;
+            if (el.align === 'left')       startX = anchorX;
+            else if (el.align === 'right') startX = anchorX - lineW;
+            else                           startX = anchorX - lineW / 2;
+            const baselineY = anchorY - totalH / 2 + lineHeight * (li + 0.85);
+            let cursor = startX;
+            for (const ch of line) {
+              const w = ctx.measureText(ch).width;
+              letters.push({
+                kind: 'char',
+                ch,
+                fontStr: canvasFontFor(el),
+                colorKey: el.color,
+                finalX: cursor + w / 2,
+                finalY: baselineY,
+                widthPx: w,
+                heightPx: fontPx
+              });
+              cursor += w;
+            }
+          }
+          assignTimings(letters, cw, ch);
+          plans.push({ el, letters });
+
+        } else if (el.kind === 'wordmark') {
+          const boxW = el.width * cw;
+          const boxH = boxW * (LOGO_H / LOGO_W);
+          const boxX = el.cx * cw - boxW / 2;
+          const boxY = el.cy * ch - boxH / 2;
+          const letters = LOGO_POS.map((item, i) => {
+            const lw = (item.w / LOGO_W) * boxW;
+            const lh = (item.h / LOGO_H) * boxH;
+            const lx = boxX + (item.x / LOGO_W) * boxW;
+            const ly = boxY + (item.y / LOGO_H) * boxH;
+            return {
+              kind: 'img',
+              imgIndex: i,
+              finalX: lx + lw / 2,
+              finalY: ly + lh / 2,
+              widthPx: lw,
+              heightPx: lh
+            };
+          });
+          assignTimings(letters, cw, ch);
+          plans.push({ el, letters });
+        }
+      }
+    }
+
+    // ── RENDER ─────────────────────────────────────────────────────────
+    function render(t, opts = {}) {
+      const [cw, ch] = ASPECTS[state.aspect];
+      if (canvas.width !== cw || canvas.height !== ch) {
+        canvas.width = cw;
+        canvas.height = ch;
+        fitCanvasToStage();
+      }
+
+      ctx.fillStyle = PALETTE[state.bg];
+      ctx.fillRect(0, 0, cw, ch);
+
+      for (const plan of plans) {
+        for (const l of plan.letters) {
+          drawLetter(l, t);
+        }
+      }
+
+      // Selection chrome (only when not exporting / recording / playing).
+      if (opts.showSelection !== false && state.selectedIndex >= 0 && !opts.exporting) {
+        const el = state.elements[state.selectedIndex];
+        if (el) {
+          const box = bboxOf(el);
+          ctx.save();
+          ctx.strokeStyle = '#ff7e3a';
+          ctx.lineWidth = Math.max(2, cw * 0.0025);
+          ctx.setLineDash([cw * 0.012, cw * 0.008]);
+          ctx.strokeRect(box.x, box.y, box.w, box.h);
+          ctx.restore();
+        }
+      }
+    }
+
+    function drawLetter(l, t) {
+      const ts = t === Infinity ? Infinity : t * state.speed;
+      if (ts < l.appearAt) return;
+
+      let drawX = l.finalX;
+      let drawY = l.finalY;
+      let rot = 0;
+
+      if (ts < l.settleAt) {
+        drawX += l.dx;
+        drawY += l.dy;
+        rot = l.rot;
+      } else if (l.stayRotated && ts < l.rotateAt) {
+        rot = l.rot;
+      } else {
+        rot = 0;
+      }
+
+      ctx.save();
+      ctx.translate(drawX, drawY);
+      if (rot) ctx.rotate(rot * Math.PI / 180);
+
+      if (l.kind === 'char') {
+        ctx.font = l.fontStr;
+        ctx.fillStyle = PALETTE[l.colorKey];
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillText(l.ch, 0, 0);
+      } else if (l.kind === 'img') {
+        const img = LOGO_IMAGES[l.imgIndex];
+        if (img && img.complete) {
+          ctx.drawImage(img, -l.widthPx / 2, -l.heightPx / 2, l.widthPx, l.heightPx);
+        }
+      }
+      ctx.restore();
+    }
+
+    function bboxOf(el) {
+      const [cw, ch] = ASPECTS[state.aspect];
+      if (el.kind === 'text') {
+        const fontPx = Math.round(el.size * Math.min(cw, ch));
+        ctx.font = canvasFontFor(el);
+        const lines = el.text.split('\n');
+        let maxW = 0;
+        for (const line of lines) {
+          const w = ctx.measureText(line).width;
+          if (w > maxW) maxW = w;
+        }
+        // Padding so single chars stay easy to grab.
+        const minW = fontPx * 0.6;
+        if (maxW < minW) maxW = minW;
+        const lineHeight = fontPx * 1.15;
+        const h = lineHeight * lines.length;
+        const anchorX = el.cx * cw;
+        let x;
+        if (el.align === 'left')       x = anchorX;
+        else if (el.align === 'right') x = anchorX - maxW;
+        else                           x = anchorX - maxW / 2;
+        const y = el.cy * ch - h / 2;
+        return { x, y, w: maxW, h };
+      } else {
+        const boxW = el.width * cw;
+        const boxH = boxW * (LOGO_H / LOGO_W);
+        return {
+          x: el.cx * cw - boxW / 2,
+          y: el.cy * ch - boxH / 2,
+          w: boxW,
+          h: boxH
+        };
+      }
+    }
+
+    function fitCanvasToStage() {
+      const wrap = document.querySelector('.canvas-wrap');
+      const aw = wrap.clientWidth;
+      const ah = wrap.clientHeight;
+      const ratio = canvas.width / canvas.height;
+      let dw, dh;
+      if (aw / ah > ratio) {
+        dh = ah;
+        dw = ah * ratio;
+      } else {
+        dw = aw;
+        dh = aw / ratio;
+      }
+      canvas.style.width = dw + 'px';
+      canvas.style.height = dh + 'px';
+      stageInfo.textContent = `${canvas.width} × ${canvas.height}`;
+    }
+
+    // ── ANIMATION LOOP ─────────────────────────────────────────────────
+    let rafId = null;
+    function loop(now) {
+      if (animStart == null) {
+        render(Infinity);
+        rafId = null;
+        return;
+      }
+      const t = now - animStart;
+      if (t > state.duration * 1000) {
+        render(Infinity);
+        animStart = null;
+        rafId = null;
+        return;
+      }
+      render(t, { showSelection: false });
+      rafId = requestAnimationFrame(loop);
+    }
+    function play() {
+      buildPlans();
+      animStart = performance.now();
+      if (rafId == null) rafId = requestAnimationFrame(loop);
+    }
+    function reset() {
+      animStart = null;
+      buildPlans();
+      render(Infinity);
+    }
+
+    // ── DRAG INTERACTION ───────────────────────────────────────────────
+    let dragState = null; // { idx, grabDX, grabDY }
+
+    function eventToCanvas(e) {
+      const rect = canvas.getBoundingClientRect();
+      const sx = (e.clientX - rect.left) / rect.width;
+      const sy = (e.clientY - rect.top) / rect.height;
+      return [sx * canvas.width, sy * canvas.height];
+    }
+
+    function hitTest(x, y) {
+      for (let i = state.elements.length - 1; i >= 0; i--) {
+        const box = bboxOf(state.elements[i]);
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) return i;
+      }
+      return -1;
+    }
+
+    canvas.addEventListener('pointerdown', (e) => {
+      // Cancel any running animation when user starts interacting.
+      animStart = null;
+      const [x, y] = eventToCanvas(e);
+      const idx = hitTest(x, y);
+      if (idx === -1) {
+        setSelectedIndex(-1);
+        return;
+      }
+      setSelectedIndex(idx);
+      const el = state.elements[idx];
+      const [cw, ch] = ASPECTS[state.aspect];
+      dragState = {
+        idx,
+        grabDX: x - el.cx * cw,
+        grabDY: y - el.cy * ch
+      };
+      canvas.classList.add('dragging');
+      canvas.setPointerCapture(e.pointerId);
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+      const [x, y] = eventToCanvas(e);
+      // Hover cursor feedback.
+      if (!dragState) {
+        canvas.classList.toggle('draggable', hitTest(x, y) !== -1);
+        return;
+      }
+      const [cw, ch] = ASPECTS[state.aspect];
+      const el = state.elements[dragState.idx];
+      el.cx = Math.max(0, Math.min(1, (x - dragState.grabDX) / cw));
+      el.cy = Math.max(0, Math.min(1, (y - dragState.grabDY) / ch));
+      reset();
+      if (pane) pane.refresh();
+    });
+
+    canvas.addEventListener('pointerup', (e) => {
+      if (dragState) {
+        canvas.classList.remove('dragging');
+        canvas.releasePointerCapture(e.pointerId);
+      }
+      dragState = null;
+    });
+
+    // ── SELECTION ──────────────────────────────────────────────────────
+    function setSelectedIndex(i) {
+      state.selectedIndex = i;
+      const el = i >= 0 ? state.elements[i] : null;
+      if (el && el.kind === 'text') {
+        selectedTextEl.disabled = false;
+        selectedTextEl.value = el.text;
+        selectedTextHint.textContent = '(editing)';
+      } else if (el && el.kind === 'wordmark') {
+        selectedTextEl.disabled = true;
+        selectedTextEl.value = '';
+        selectedTextEl.placeholder = 'Wordmark selected — no text content.';
+        selectedTextHint.textContent = '(wordmark)';
+      } else {
+        selectedTextEl.disabled = true;
+        selectedTextEl.value = '';
+        selectedTextEl.placeholder = 'Click a text element on the canvas to edit its content here.';
+        selectedTextHint.textContent = '(click a text element)';
+      }
+      render(Infinity);
+    }
+
+    selectedTextEl.addEventListener('input', () => {
+      if (state.selectedIndex < 0) return;
+      const el = state.elements[state.selectedIndex];
+      if (!el || el.kind !== 'text') return;
+      el.text = selectedTextEl.value;
+      reset();
+    });
+
+    // ── TWEAKPANE ──────────────────────────────────────────────────────
+    let pane = null;
+    function rebuildPane() {
+      if (pane) pane.dispose();
+      pane = new Pane({ container: document.getElementById('pane') });
+      pane.registerPlugin(EssentialsPlugin);
+
+      // CANVAS folder
+      const canvasFolder = pane.addFolder({ title: 'Canvas' });
+      canvasFolder.addBinding(state, 'aspect', { options: ASPECT_OPTS })
+        .on('change', () => reset());
+      canvasFolder.addBinding(state, 'bg', { label: 'background', options: PALETTE_OPTS })
+        .on('change', () => reset());
+
+      // ANIMATION folder
+      const animFolder = pane.addFolder({ title: 'Animation' });
+      animFolder.addBinding(state, 'speed',    { min: 0.5, max: 2,  step: 0.1 });
+      animFolder.addBinding(state, 'duration', { min: 4,   max: 12, step: 0.5 });
+
+      // PRESETS folder
+      const presetFolder = pane.addFolder({ title: 'Presets', expanded: false });
+      [
+        ['Wordmark hero',     'wordmark-hero'],
+        ['Title card',        'title-card'],
+        ['Schedule callout',  'schedule'],
+        ['Wordmark only',     'wordmark-only'],
+        ['Blank canvas',      'blank']
+      ].forEach(([label, key]) => {
+        presetFolder.addButton({ title: label }).on('click', () => loadPreset(key));
+      });
+
+      // ADD folder
+      const addFolder = pane.addFolder({ title: 'Add element' });
+      addFolder.addButton({ title: '+ Text' }).on('click', () => {
+        state.elements.push(makeText({ cx: 0.5, cy: 0.5 }));
+        setSelectedIndex(state.elements.length - 1);
+        rebuildPane();
+        reset();
+      });
+      addFolder.addButton({ title: '+ Wordmark' }).on('click', () => {
+        state.elements.push(makeWordmark({ cx: 0.5, cy: 0.5 }));
+        setSelectedIndex(state.elements.length - 1);
+        rebuildPane();
+        reset();
+      });
+
+      // ELEMENTS folder
+      const elementsFolder = pane.addFolder({ title: `Elements (${state.elements.length})` });
+      state.elements.forEach((el, i) => {
+        const titlePrefix = el.kind === 'text'
+          ? `Text · ${(el.text || '').replace(/\n/g, ' ').slice(0, 22) || '(empty)'}`
+          : 'Wordmark';
+        const isSelected = i === state.selectedIndex;
+        const ef = elementsFolder.addFolder({
+          title: (isSelected ? '▸ ' : '') + titlePrefix,
+          expanded: isSelected
+        });
+
+        if (el.kind === 'text') {
+          ef.addBinding(el, 'font',   { options: FONT_OPTS   }).on('change', () => reset());
+          ef.addBinding(el, 'size',   { min: 0.01, max: 0.20, step: 0.001 }).on('change', () => reset());
+          ef.addBinding(el, 'weight', { options: WEIGHT_OPTS }).on('change', () => reset());
+          ef.addBinding(el, 'italic')                            .on('change', () => reset());
+          ef.addBinding(el, 'color',  { options: PALETTE_OPTS }).on('change', () => reset());
+          ef.addBinding(el, 'align',  { options: ALIGN_OPTS   }).on('change', () => reset());
+        } else {
+          ef.addBinding(el, 'width', { min: 0.10, max: 1.00, step: 0.01 }).on('change', () => reset());
+        }
+        ef.addBinding(el, 'cx', { label: 'pos x', min: 0, max: 1, step: 0.001 }).on('change', () => reset());
+        ef.addBinding(el, 'cy', { label: 'pos y', min: 0, max: 1, step: 0.001 }).on('change', () => reset());
+
+        ef.addButton({ title: 'Select' }).on('click', () => { setSelectedIndex(i); rebuildPane(); });
+        ef.addButton({ title: 'Duplicate' }).on('click', () => {
+          const copy = JSON.parse(JSON.stringify(el));
+          copy.id = 'el-' + (nextId++);
+          copy.cx = Math.min(1, copy.cx + 0.04);
+          copy.cy = Math.min(1, copy.cy + 0.04);
+          state.elements.splice(i + 1, 0, copy);
+          setSelectedIndex(i + 1);
+          rebuildPane();
+          reset();
+        });
+        ef.addButton({ title: 'Bring forward' }).on('click', () => {
+          if (i >= state.elements.length - 1) return;
+          const [moved] = state.elements.splice(i, 1);
+          state.elements.splice(i + 1, 0, moved);
+          setSelectedIndex(i + 1);
+          rebuildPane();
+          reset();
+        });
+        ef.addButton({ title: 'Send backward' }).on('click', () => {
+          if (i <= 0) return;
+          const [moved] = state.elements.splice(i, 1);
+          state.elements.splice(i - 1, 0, moved);
+          setSelectedIndex(i - 1);
+          rebuildPane();
+          reset();
+        });
+        ef.addButton({ title: 'Delete' }).on('click', () => {
+          state.elements.splice(i, 1);
+          if (state.selectedIndex === i) setSelectedIndex(-1);
+          else if (state.selectedIndex > i) state.selectedIndex--;
+          rebuildPane();
+          reset();
+        });
+      });
+
+      // SLOTS folder
+      const slotsFolder = pane.addFolder({ title: 'Slots', expanded: false });
+      for (let n = 1; n <= 4; n++) {
+        const row = slotsFolder.addBlade({
+          view: 'buttongrid',
+          size: [2, 1],
+          cells: (x) => ({ title: x === 0 ? `Save ${n}` : `Load ${n}` })
+        });
+        row.on('click', (ev) => {
+          if (ev.index[0] === 0) saveSlot(n);
+          else loadSlot(n);
+        });
+      }
+
+      // EXPORT folder
+      const exportFolder = pane.addFolder({ title: 'Export' });
+      exportFolder.addButton({ title: '⬇ Export PNG (still)' }).on('click', exportPNG);
+      exportFolder.addButton({ title: '⬇ Export MP4 (video)' }).on('click', exportVideo);
+    }
+
+    // ── PRESETS / SLOTS ────────────────────────────────────────────────
+    function loadPreset(key) {
+      state.elements = PRESETS[key]();
+      setSelectedIndex(-1);
+      rebuildPane();
+      reset();
+    }
+
+    const SLOT_KEY = 'studio.slot.';
+    function saveSlot(n) {
+      const blob = JSON.stringify({
+        aspect: state.aspect,
+        bg: state.bg,
+        speed: state.speed,
+        duration: state.duration,
+        elements: state.elements
+      });
+      localStorage.setItem(SLOT_KEY + n, blob);
+    }
+    function loadSlot(n) {
+      const raw = localStorage.getItem(SLOT_KEY + n);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      state.aspect = data.aspect;
+      state.bg = data.bg;
+      state.speed = data.speed;
+      state.duration = data.duration;
+      state.elements = data.elements;
+      // Re-stamp IDs to avoid collisions.
+      state.elements.forEach(el => { el.id = 'el-' + (nextId++); });
+      setSelectedIndex(-1);
+      rebuildPane();
+      reset();
+    }
+
+    // ── EXPORT ─────────────────────────────────────────────────────────
+    function timestamp() {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '-' +
+             pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+    }
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function exportPNG() {
+      buildPlans();
+      render(Infinity, { exporting: true });
+      canvas.toBlob((blob) => {
+        downloadBlob(blob, `imellanrummet-${state.aspect.replace(':', 'x')}-${timestamp()}.png`);
+        render(Infinity); // restore selection chrome
+      }, 'image/png');
+    }
+
+    function exportVideo() {
+      buildPlans();
+      const tryMimes = [
+        'video/mp4;codecs=avc1.42E01E',
+        'video/mp4',
+        'video/webm;codecs=vp9',
+        'video/webm;codecs=vp8',
+        'video/webm'
+      ];
+      let mime = '';
+      for (const m of tryMimes) {
+        if (MediaRecorder.isTypeSupported(m)) { mime = m; break; }
+      }
+      if (!mime) { alert('No supported video MIME on this browser.'); return; }
+      const ext = mime.startsWith('video/mp4') ? 'mp4' : 'webm';
+
+      const stream = canvas.captureStream(30);
+      const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 12_000_000 });
+      const chunks = [];
+      rec.ondataavailable = (e) => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+      rec.onstop = () => {
+        const blob = new Blob(chunks, { type: mime });
+        downloadBlob(blob, `imellanrummet-${state.aspect.replace(':', 'x')}-${timestamp()}.${ext}`);
+        recIndicator.classList.remove('on');
+        render(Infinity);
+      };
+
+      recIndicator.classList.add('on');
+      rec.start();
+      // Drive an animation pass while recording — render(t, {showSelection:false})
+      // so the chrome doesn't end up in the export.
+      const start = performance.now();
+      function recordTick(now) {
+        const t = now - start;
+        if (t > state.duration * 1000 + 200) {
+          rec.stop();
+          return;
+        }
+        render(t, { showSelection: false });
+        requestAnimationFrame(recordTick);
+      }
+      requestAnimationFrame(recordTick);
+    }
+
+    // ── KEYBOARD ───────────────────────────────────────────────────────
+    document.addEventListener('keydown', (e) => {
+      if (e.target.matches('input, textarea')) return;
+      if (e.code === 'Space') { e.preventDefault(); play(); }
+      else if (e.code === 'KeyR') { reset(); }
+      else if ((e.code === 'Delete' || e.code === 'Backspace') && state.selectedIndex >= 0) {
+        state.elements.splice(state.selectedIndex, 1);
+        setSelectedIndex(-1);
+        rebuildPane();
+        reset();
+      } else if (state.selectedIndex >= 0) {
+        const el = state.elements[state.selectedIndex];
+        const step = e.shiftKey ? 0.02 : 0.005;
+        if (e.code === 'ArrowLeft')  { el.cx = Math.max(0, el.cx - step); reset(); pane && pane.refresh(); }
+        if (e.code === 'ArrowRight') { el.cx = Math.min(1, el.cx + step); reset(); pane && pane.refresh(); }
+        if (e.code === 'ArrowUp')    { el.cy = Math.max(0, el.cy - step); reset(); pane && pane.refresh(); }
+        if (e.code === 'ArrowDown')  { el.cy = Math.min(1, el.cy + step); reset(); pane && pane.refresh(); }
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      fitCanvasToStage();
+      render(Infinity);
+    });
+
+    document.getElementById('play').addEventListener('click', play);
+    document.getElementById('reset').addEventListener('click', reset);
+
+    // ── INIT ───────────────────────────────────────────────────────────
+    function preloadLogoImages() {
+      return Promise.all(LOGO_POS.map((item, i) => new Promise((res) => {
+        const img = new Image();
+        img.onload = () => { LOGO_IMAGES[i] = img; res(); };
+        img.onerror = () => { LOGO_IMAGES[i] = null; res(); };
+        img.src = item.src;
+      })));
+    }
+
+    (async function init() {
+      rebuildPane();
+      if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (_) {}
+      }
+      await preloadLogoImages();
+      fitCanvasToStage();
+      reset();
+    })();
+  </script>
+</body>
+</html>

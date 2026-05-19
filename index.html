@@ -70,7 +70,7 @@
     .block-cue {
       position: absolute;
       left: 50%;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
       transform: translateX(-50%);
       display: inline-flex;
       align-items: center;
@@ -124,28 +124,6 @@
     .landing[data-lang="en"] .landing-lang-switch {
       color: var(--black);
       border-color: var(--black);
-    }
-    /* In English the title is a real phrase, not a wordmark — drop the italic
-       wordmark treatment and let plain Open Sans carry it. Sized larger than
-       the original EN clamp so it has visual weight; the explicit `\n` in
-       the data-en attribute drops a <br class="title-break-mobile"> in front
-       of "between" which only shows up below the breakpoint. */
-    .landing[data-lang="en"] .landing-headline {
-      font-style: normal;
-      font-size: clamp(40px, 13vw, 84px);
-      margin-top: 1rem;
-    }
-    /* Hide the in-title <br> on wider viewports; keep it on mobile. */
-    .title-break-mobile { display: none; }
-    @media (max-width: 700px) {
-      .title-break-mobile { display: initial; }
-    }
-    /* On desktop, force the title to a single line so the .landing-main
-       max-width (720px) can't push "between" to the next row. */
-    @media (min-width: 701px) {
-      .landing[data-lang="en"] .landing-headline {
-        white-space: nowrap;
-      }
     }
 
     .landing-top {
@@ -1079,10 +1057,25 @@
       }
     }
 
+    /* Schema label + marquee share a line — label keeps its width, marquee
+       fills the rest and clips overflow so the scrolling track stays inside. */
+    .schedule-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1.5em;
+      margin-bottom: 2rem;
+      min-width: 0;
+    }
+    .schedule-header .section-label {
+      margin-bottom: 0;
+      flex-shrink: 0;
+    }
+
     /* Schedule-hint marquee — mirrors the nav marquee style and speed. */
     .schedule-hint {
-      margin-top: -1rem;
-      margin-bottom: 1rem;
+      margin: 0;
+      flex: 1 1 auto;
+      min-width: 0;
       overflow: hidden;
       white-space: nowrap;
     }
@@ -1110,8 +1103,18 @@
 
     .schedule-hint-track {
       display: inline-flex;
-      animation: schedule-hint-marquee 15s linear infinite;
+      animation: schedule-hint-marquee 40s linear infinite;
+      animation-direction: reverse;
       /* hover to pause if you ever want it */
+    }
+
+    /* Language-gated visibility — hide the off-language text AND the separator
+       arrow that follows it, so the visible pattern stays [text][↓][text][↓]. */
+    .schedule-block[data-lang="sv"] .schedule-hint-en,
+    .schedule-block[data-lang="sv"] .schedule-hint-en + .schedule-hint-sep,
+    .schedule-block[data-lang="en"] .schedule-hint-sv,
+    .schedule-block[data-lang="en"] .schedule-hint-sv + .schedule-hint-sep {
+      display: none;
     }
 
     .schedule-hint-track > span {
@@ -1177,15 +1180,16 @@
       font-weight: 500;
       font-size: 16px;
       font-family: var(--sans);
-      color: blue;
+      color: rgb(192, 0, 0);
       opacity: 1;
     }
 
     .schedule-item.current .schedule-date {
-      color: var(--black);
-      font-style: normal;
+      font-weight: 500;
       font-size: 16px;
-      color: blue;
+      font-family: var(--serif);
+      color: rgb(192, 0, 0);
+      opacity: 1;
     }
 
     .about-text {
@@ -1417,8 +1421,8 @@
     <div class="landing-top">
       <div class="landing-main">
         <p class="landing-date">20.5–8.6</p>
-        <h1 class="landing-headline" data-sv="I Mellanrummet" data-en="In the space &#10;between">I Mellanrummet</h1>
-        <h2 class="landing-subheadline" data-sv="En utställning i förändring" data-en="An exhibition in transformation">En utställning i förändring</h2>
+        <h1 class="landing-headline" data-sv="I Mellanrummet" data-en="I Mellanrummet">I Mellanrummet</h1>
+        <h2 class="landing-subheadline" data-sv="En utställning i förändring" data-en="Directly translated to <em>in between</em>. <br> An exhibition in transformation">En utställning i förändring</h2>
         <p class="landing-bio"
            data-sv="<em>I Mellanrummet</em> samlar 10 konstnärer som genom sina unika ingrepp utforskar det kollektiva skapandets kraft. Följ processen på plats på Åsögatan 122, där fönstret byter skepnad var 48:e timme fram till den slutgiltiga installationen den 7 juni."
            data-en="<em>I Mellanrummet</em> brings together ten artists who, through their unique interventions, explore the power of collective creation. Follow the process on site at Åsögatan 122, where the window changes form every 48 hours leading up to the final installation on June 7.">
@@ -1479,12 +1483,30 @@
   </section>
 
   <!-- ── BLOCK 3 · SCHEDULE + ABOUT ── -->
-  <section class="block schedule-block" id="info">
+  <section class="block schedule-block" id="info" data-lang="sv">
     <div class="schedule-section">
-      <p class="section-label" id="scheduleLabel">Schema</p>
-      <p class="schedule-hint" aria-label="Tryck för mer info">
+      <div class="schedule-header">
+        <p class="section-label" id="scheduleLabel">Schema</p>
+        <p class="schedule-hint" aria-label="Tryck för mer info">
         <span class="schedule-hint-track" aria-hidden="true">
-          <!-- Keep the count even (SV+EN pair, repeated) so the loop is seamless. -->
+          <!-- Even number of SV+EN pairs, repeated enough times that one
+               language alone still fills the viewport for a seamless loop. -->
+          <span class="schedule-hint-sv">Tryck för mer info</span>
+          <span class="schedule-hint-sep" aria-hidden="true">&darr;</span>
+          <span class="schedule-hint-en">Click for more info</span>
+          <span class="schedule-hint-sep" aria-hidden="true">&darr;</span>
+          <span class="schedule-hint-sv">Tryck för mer info</span>
+          <span class="schedule-hint-sep" aria-hidden="true">&darr;</span>
+          <span class="schedule-hint-en">Click for more info</span>
+          <span class="schedule-hint-sep" aria-hidden="true">&darr;</span>
+          <span class="schedule-hint-sv">Tryck för mer info</span>
+          <span class="schedule-hint-sep" aria-hidden="true">&darr;</span>
+          <span class="schedule-hint-en">Click for more info</span>
+          <span class="schedule-hint-sep" aria-hidden="true">&darr;</span>
+          <span class="schedule-hint-sv">Tryck för mer info</span>
+          <span class="schedule-hint-sep" aria-hidden="true">&darr;</span>
+          <span class="schedule-hint-en">Click for more info</span>
+          <span class="schedule-hint-sep" aria-hidden="true">&darr;</span>
           <span class="schedule-hint-sv">Tryck för mer info</span>
           <span class="schedule-hint-sep" aria-hidden="true">&darr;</span>
           <span class="schedule-hint-en">Click for more info</span>
@@ -1495,6 +1517,7 @@
           <span class="schedule-hint-sep" aria-hidden="true">&darr;</span>
         </span>
       </p>
+      </div>
       <div class="schedule-list" id="scheduleList"></div>
     </div>
 
@@ -1512,7 +1535,7 @@
       <p class="about-text-en">What happens to an artwork when it ceases to belong to a single individual and instead becomes part of a shared cycle? In a time when the art scene is characterized by exclusivity and measurability, the project <em>I Mellanrummet</em> moves in the opposite direction. By valuing process over final product and the collective over the private, we create a space where control is passed along between participating artists. Nothing here is constant; instead, the exhibition exists in the in-between — a state of continuous transformation.
       <br><br>Ten artists are ready to take part in a chain reaction of creation within a one-square-meter window on Södermalm. Every other day, the door opens for a new artist who not only adds to, but also transforms the previous work into their own. In this way, a wordless, ongoing dialogue emerges. It becomes an exercise in letting go and allowing the work to live its own life through the hands of others.
       </p>
-      <p class="sub-about" id="subAbout" data-sv="Kurerad och på initiativ av Linnea Wästfelt" data-en="Curated and initiated by Linnea Wästfelt">Kurerad och på initiativ av Linnea Wästfelt</p>
+      <p class="sub-about" id="subAbout" data-sv="Curator: Linnea Wästfelt" data-en="Curated by: Linnea Wästfelt">Curator: Linnea Wästfelt</p>
       <p class="about-meta">Hemsida av Linn Willebrand & Linnea Wästfelt 2026</p>
     </div>
 
@@ -1984,18 +2007,15 @@ Different materialities and forms of expression intersect in Bergman's practice.
           if (val != null) el.innerHTML = val;
         });
         const headline = document.querySelector('.landing-headline');
-        if (headline) {
-          if (next === 'sv' && wordmarkHTML != null) {
-            headline.innerHTML = wordmarkHTML;
-            headline.classList.add('landing-headline-logo');
-          } else {
-            headline.innerHTML = headline.dataset.en || 'In the space \nbetween';
-            headline.classList.remove('landing-headline-logo');
-          }
+        if (headline && wordmarkHTML != null) {
+          headline.innerHTML = wordmarkHTML;
+          headline.classList.add('landing-headline-logo');
         }
 
         // Propagate to every other section.
         buildMarquee(next);
+        const scheduleBlock = document.querySelector('.schedule-block');
+        if (scheduleBlock) scheduleBlock.dataset.lang = next;
         if (typeof setCurrentLang === 'function') setCurrentLang(next);
         if (typeof setAboutLang   === 'function') setAboutLang(next);
         if (typeof setModalLang   === 'function') setModalLang(next);
@@ -2542,6 +2562,22 @@ Different materialities and forms of expression intersect in Bergman's practice.
       const section = document.getElementById('current');
       if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+
+    // ── HIDDEN STUDIO ENTRY
+    // Type "studio" anywhere on the page to jump to the social-composer tool.
+    (function studioHotkey() {
+      let buf = '';
+      document.addEventListener('keydown', (e) => {
+        // Ignore when focus is in an editable field.
+        if (e.target.matches && e.target.matches('input, textarea, [contenteditable="true"]')) return;
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        if (e.key.length !== 1) return;
+        buf = (buf + e.key.toLowerCase()).slice(-6);
+        if (buf === 'studio') {
+          window.location.href = 'studio.html';
+        }
+      });
+    })();
   </script>
 </body>
 </html>
