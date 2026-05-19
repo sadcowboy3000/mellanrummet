@@ -99,6 +99,33 @@
       padding: env(safe-area-inset-top, 0) 0 0;
     }
 
+    /* Landing-only EN/SV toggle, sits at top-right under the nav + marquee. */
+    .landing-lang-switch {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 6.5rem);
+      right: 1rem;
+      z-index: 5;
+    }
+    .landing[data-lang="en"] .landing-lang-switch {
+      color: var(--black);
+      border-color: var(--black);
+    }
+    /* In English the title is a real phrase, not a wordmark — drop the italic
+       wordmark treatment and let plain Open Sans carry it. Sized larger than
+       the original EN clamp so it has visual weight; the explicit `\n` in
+       the data-en attribute drops a <br class="title-break-mobile"> in front
+       of "between" which only shows up below the breakpoint. */
+    .landing[data-lang="en"] .landing-headline {
+      font-style: normal;
+      font-size: clamp(40px, 13vw, 84px);
+      margin-top: 1rem;
+    }
+    /* Hide the in-title <br> on wider viewports; keep it on mobile. */
+    .title-break-mobile { display: none; }
+    @media (max-width: 700px) {
+      .title-break-mobile { display: initial; }
+    }
+
     .landing-top {
       padding: 1rem 1rem;
       display: grid;
@@ -196,17 +223,20 @@
     }
 
     .landing-subheadline{
-      color: #808080 !important;
+      color: var(--black);
       text-align: center;
 
       font-family: var(--sans);
-      font-size: clamp(24px, 7vw, 36px);
+      font-size: clamp(18px, 5vw, 26px);
       font-style: italic;
       font-weight: 300;
       line-height: 1.0;
       letter-spacing: -0.025em;
-      color: var(--black);
       margin-bottom: 0;
+    }
+    /* Keep the dimmed look only in English mode. */
+    .landing[data-lang="en"] .landing-subheadline {
+      color: #808080;
     }
 
     .landing-date {
@@ -1313,15 +1343,18 @@
   </div>
 
   <!-- ── BLOCK 1 · LANDING ── -->
-  <section class="block landing" id="top">
+  <section class="block landing" id="top" data-lang="sv">
+    <button class="lang-switch-inline landing-lang-switch" id="landingLangSwitch" type="button">EN</button>
+
     <div class="landing-top">
       <div class="landing-main">
         <p class="landing-date">20.5–8.6</p>
-        <h1 class="landing-headline">I Mellanrummet</h1>
-        <h2 class="landing-subheadline">In the space between</h2>
-        <p class="landing-bio">
+        <h1 class="landing-headline" data-sv="I Mellanrummet" data-en="In the space &#10;between">I Mellanrummet</h1>
+        <h2 class="landing-subheadline" data-sv="En utställning i förändring" data-en="An exhibition in transformation">En utställning i förändring</h2>
+        <p class="landing-bio"
+           data-sv="<em>I Mellanrummet</em> samlar 10 konstnärer som genom sina unika ingrepp utforskar det kollektiva skapandets kraft. Följ processen på plats på Åsögatan 122, där fönstret byter skepnad var 48:e timme fram till den slutgiltiga installationen den 7 juni."
+           data-en="<em>I Mellanrummet</em> brings together ten artists who, through their unique interventions, explore the power of collective creation. Follow the process on site at Åsögatan 122, where the window changes form every 48 hours leading up to the final installation on June 7.">
         <em>I Mellanrummet</em> samlar 10 konstnärer som genom sina unika ingrepp utforskar det kollektiva skapandets kraft. Följ processen på plats på Åsögatan 122, där fönstret byter skepnad var 48:e timme fram till den slutgiltiga installationen den 7 juni.
-       <!-- <em>Ten artists. One wall. Three weeks. Each responds to the previous.</em>-->
       </p>
       </div>
 
@@ -1330,7 +1363,7 @@
     <div class="landing-bottom">
 
       <a class="scroll-cue" href="#current">
-        <span>Nuvarande</span>
+        <span data-sv="Nuvarande" data-en="Current">Nuvarande</span>
         <div class="scroll-arrow">
           <svg viewBox="0 0 12 12" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="6" y1="1" x2="6" y2="11"/><polyline points="2,7 6,11 10,7"/>
@@ -1668,18 +1701,25 @@ Different materialities and forms of expression intersect in Bergman's practice.
     navDate.textContent = today().toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' });
 
     // ── POPULATE MARQUEE
-    const marqueeTrack = document.getElementById('marqueeTrack');
-    if (marqueeTrack) {
+    // Builds the marquee strip in the chosen language. Called once on load
+    // with 'sv', and again whenever the landing EN/SV button is toggled.
+    function buildMarquee(lang) {
+      const marqueeTrack = document.getElementById('marqueeTrack');
+      if (!marqueeTrack) return;
       const tToday = today();
       const upcomingArtist = ARTISTS.find(a => parseDate(a.start) >= tToday) || ARTISTS[0];
       const vDate = parseDate(upcomingArtist.start);
       const vDateStr = vDate.getDate() + '/' + (vDate.getMonth() + 1);
-      const msg = 'Öppet varje dag — dygnet runt' +
+      const labels = lang === 'en'
+        ? { opening: 'Open every day — around the clock', next: 'Next vernissage:' }
+        : { opening: 'Öppet varje dag — dygnet runt',     next: 'Nästa vernissage:' };
+      const msg = labels.opening +
         '<em>&#8594;</em>' +
-        'Nästa vernissage: ' + upcomingArtist.name + ' ' + vDateStr + ' 17:00 - 19:00';
+        labels.next + ' ' + upcomingArtist.name + ' ' + vDateStr + ' 17:00 - 19:00';
       // Repeat enough times to fill the viewport and loop seamlessly.
       marqueeTrack.innerHTML = ('<span>' + msg + '</span>').repeat(6);
     }
+    buildMarquee('sv');
 
     // ── LETTER ANIMATION (step-based, no smooth transitions)
     // 1) Letters appear ONE AT A TIME in random order, scattered around the
@@ -1713,6 +1753,16 @@ Different materialities and forms of expression intersect in Bergman's practice.
         el.textContent = '';
 
         for (const ch of text) {
+          // Newline → insert a <br> that's only visible on narrow viewports
+          // (lets the landing title break before "between" on mobile while
+          // staying on one line on desktop). Doesn't get pushed into letters
+          // so it's invisible to the scatter/settle phases below.
+          if (ch === '\n') {
+            const br = document.createElement('br');
+            br.className = 'title-break-mobile';
+            el.appendChild(br);
+            continue;
+          }
           const span = document.createElement('span');
           span.className = 'headline-letter';
           span.setAttribute('aria-hidden', 'true');
@@ -1806,6 +1856,10 @@ Different materialities and forms of expression intersect in Bergman's practice.
       { src: 'assets/LogoFont/Mellanrummet-_0014__2.png', x: 1769, y: 42,  w: 145, h: 118 }  // "
     ];
 
+    // Saved snapshot of the assembled image wordmark. Captured BEFORE the
+    // letter animation runs so it can be restored cleanly if the landing
+    // language toggle ever needs to swap back from English plain text.
+    let wordmarkHTML = null;
     (function buildLogoHeadline() {
       const el = document.querySelector('.landing-headline');
       if (!el) return;
@@ -1829,10 +1883,52 @@ Different materialities and forms of expression intersect in Bergman's practice.
         span.appendChild(img);
         el.appendChild(span);
       }
+      wordmarkHTML = el.innerHTML;
     })();
 
     animateLetters('.landing-headline');
     animateLetters('.landing-date');
+
+    // Landing-page language toggle. Swaps every element with data-sv/data-en
+    // inside .landing (innerHTML so the bio's <em> tags survive). The headline
+    // is special-cased because in SV it is the assembled image wordmark, not
+    // plain text — so SV restores the saved image markup, EN drops in plain
+    // text (and removes the .landing-headline-logo class whose `font-size: 0`
+    // would otherwise hide it).
+    (function setupLandingLang() {
+      const landing = document.getElementById('top');
+      const langBtn = document.getElementById('landingLangSwitch');
+      if (!landing || !langBtn) return;
+      langBtn.addEventListener('click', () => {
+        const next = landing.dataset.lang === 'sv' ? 'en' : 'sv';
+        landing.dataset.lang = next;
+        langBtn.textContent = next === 'sv' ? 'EN' : 'SV';
+
+        landing.querySelectorAll('[data-sv][data-en]').forEach((el) => {
+          if (el.classList.contains('landing-headline')) return;
+          const val = next === 'en' ? el.dataset.en : el.dataset.sv;
+          if (val != null) el.innerHTML = val;
+        });
+
+        const headline = document.querySelector('.landing-headline');
+        if (headline) {
+          if (next === 'sv' && wordmarkHTML != null) {
+            headline.innerHTML = wordmarkHTML;
+            headline.classList.add('landing-headline-logo');
+          } else {
+            headline.innerHTML = headline.dataset.en || 'In the space \nbetween';
+            headline.classList.remove('landing-headline-logo');
+          }
+        }
+
+        // Rebuild the marquee strip in the new language.
+        buildMarquee(next);
+
+        // Same scatter/settle animation as the original page load.
+        animateLetters('.landing-headline');
+        animateLetters('.landing-date');
+      });
+    })();
 
     // Fast preset for the current artist block — no fade-in, ~3× quicker.
     const FAST_LETTER_OPTS = {
