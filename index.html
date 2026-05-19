@@ -70,7 +70,7 @@
     .block-cue {
       position: absolute;
       left: 50%;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 2rem);
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
       transform: translateX(-50%);
       display: inline-flex;
       align-items: center;
@@ -249,6 +249,7 @@
     .landing-date {
       font-family: var(--Tsans);
       font-size: 40px;
+      letter-spacing: 0.1rem;
       color: var(--black);
       text-align: center;
       margin-bottom: 0rem;
@@ -355,7 +356,7 @@
       font-size: clamp(42px, 11vw, 68px);
       font-weight: 400;
       line-height: 1;
-      letter-spacing: -0.02em;
+      letter-spacing: 0.1rem;
       margin-bottom: 1.25rem;
     }
 
@@ -368,6 +369,44 @@
     /* Swap SV/EN bios in place, driven by data-lang on .current-bottom. */
     .current-bottom[data-lang="sv"] .artist-bio-en { display: none; }
     .current-bottom[data-lang="en"] .artist-bio    { display: none; }
+
+    /* Bio wrapper — only collapses on mobile when the .collapsible class is
+       applied to it from JS (currently just Vincent Duraud as the test). The
+       expand button below it lives outside the wrapper so the artist links +
+       EN/SV button stay visible regardless of expanded state. */
+    .bio-expand-btn { display: none; }
+    @media (max-width: 700px) {
+      .bio-wrapper.collapsible:not(.expanded) {
+        /* Viewport-relative so the whole section fits when collapsed —
+           sized so the artist name, links row, and scroll cue all stay
+           within the visible viewport on mobile. */
+        max-height: 45vh;
+        overflow: hidden;
+        -webkit-mask-image: linear-gradient(to bottom, black 65%, transparent 100%);
+                mask-image: linear-gradient(to bottom, black 65%, transparent 100%);
+      }
+      .bio-wrapper.collapsible ~ .bio-expand-btn {
+        display: block;
+        margin: 0.5rem auto 0.25rem;
+        background: none;
+        border: 1px solid var(--gray-300);
+        /* Match the EN/SV ellipse style on .lang-switch-inline. */
+        border-radius: 50%;
+        padding: 6px 20px;
+        min-width: 110px;
+        cursor: pointer;
+        font-family: var(--sans);
+        font-size: 13px;
+        text-transform: uppercase;
+        color: var(--gray-500);
+        transition: color 0.15s ease, border-color 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .bio-wrapper.collapsible ~ .bio-expand-btn:hover {
+        color: var(--black);
+        border-color: var(--black);
+      }
+    }
 
     /* Row that holds the artist links (left) and the EN/SV button (right). */
     .current-bottom .artist-meta {
@@ -412,6 +451,12 @@
       border-color: var(--black);
     }
     .current-bottom[data-lang="en"] .lang-switch-inline { color: var(--black); border-color: var(--black); }
+
+    /* Hide every per-section EN/SV button. The landing-page button is now the
+       site-wide master toggle. The .landing-lang-switch class scope rule
+       below re-allows the landing one. */
+    .lang-switch-inline { display: none; }
+    .landing-lang-switch { display: inline-flex; }
 
     .section-label {
 
@@ -875,6 +920,7 @@
       font-size: 40px;
       font-weight: 400;
       color: var(--black);
+      letter-spacing: 0.05rem;
       text-align: center;
       margin-bottom: 1.5rem;
     }
@@ -1392,8 +1438,15 @@
 
     <div class="current-bottom" id="currentBottom" data-lang="sv">
       <!--<p class="field-label">Om konstnären</p> -->
-      <p class="artist-bio" id="currentBio"></p>
-      <p class="artist-bio-en" id="currentBioEn"></p>
+      <div class="bio-wrapper" id="bioWrapper">
+        <p class="artist-bio" id="currentBio"></p>
+        <p class="artist-bio-en" id="currentBioEn"></p>
+      </div>
+      <button class="bio-expand-btn" id="bioExpandBtn" type="button"
+              data-sv-collapsed="Visa mer"
+              data-sv-expanded="Visa mindre"
+              data-en-collapsed="Show more"
+              data-en-expanded="Show less">Visa mer</button>
       <div class="artist-meta">
         <div class="artist-links" id="currentLinks"></div>
         <button class="lang-switch-inline" id="currentLangSwitch" type="button">EN</button>
@@ -1896,27 +1949,25 @@ Different materialities and forms of expression intersect in Bergman's practice.
     animateLetters('.landing-headline');
     animateLetters('.landing-date');
 
-    // Landing-page language toggle. Swaps every element with data-sv/data-en
-    // inside .landing (innerHTML so the bio's <em> tags survive). The headline
-    // is special-cased because in SV it is the assembled image wordmark, not
-    // plain text — so SV restores the saved image markup, EN drops in plain
-    // text (and removes the .landing-headline-logo class whose `font-size: 0`
-    // would otherwise hide it).
+    // Landing-page language toggle — this is now the SITE-WIDE master toggle.
+    // Clicking it flips every section (current artist, modal, about-project,
+    // marquee, landing) in one go. Per-section EN/SV buttons are hidden via
+    // CSS so this is the single point of control.
     (function setupLandingLang() {
       const landing = document.getElementById('top');
       const langBtn = document.getElementById('landingLangSwitch');
       if (!landing || !langBtn) return;
       langBtn.addEventListener('click', () => {
         const next = landing.dataset.lang === 'sv' ? 'en' : 'sv';
+
+        // Landing: data-lang, button label, text swap, headline special-case.
         landing.dataset.lang = next;
         langBtn.textContent = next === 'sv' ? 'EN' : 'SV';
-
         landing.querySelectorAll('[data-sv][data-en]').forEach((el) => {
           if (el.classList.contains('landing-headline')) return;
           const val = next === 'en' ? el.dataset.en : el.dataset.sv;
           if (val != null) el.innerHTML = val;
         });
-
         const headline = document.querySelector('.landing-headline');
         if (headline) {
           if (next === 'sv' && wordmarkHTML != null) {
@@ -1928,8 +1979,11 @@ Different materialities and forms of expression intersect in Bergman's practice.
           }
         }
 
-        // Rebuild the marquee strip in the new language.
+        // Propagate to every other section.
         buildMarquee(next);
+        if (typeof setCurrentLang === 'function') setCurrentLang(next);
+        if (typeof setAboutLang   === 'function') setAboutLang(next);
+        if (typeof setModalLang   === 'function') setModalLang(next);
 
         // Same scatter/settle animation as the original page load.
         animateLetters('.landing-headline');
@@ -2074,6 +2128,9 @@ Different materialities and forms of expression intersect in Bergman's practice.
       if (!currentBottom) return;
       currentBottom.dataset.lang = lang;
       if (currentLangSwitch) currentLangSwitch.textContent = lang === 'sv' ? 'EN' : 'SV';
+      // SV and EN bios usually differ in length, so re-measure for collapse.
+      applyBioCollapsible();
+      updateBioExpandLabel();
     }
     if (currentLangSwitch) {
       currentLangSwitch.addEventListener('click', () => {
@@ -2081,29 +2138,70 @@ Different materialities and forms of expression intersect in Bergman's practice.
       });
     }
 
-    // Same EN/SV toggle for the "Om projektet" section. Also swaps the
-    // bilingual strings on any element with data-sv + data-en attributes
-    // inside the section, and re-fires the letter animation on the title.
+    // Collapsible bio (mobile-only, applied only to specific artists for now).
+    // Adds a gradient mask to the bio when too long and a pill button below
+    // it to expand/collapse. The artist-meta row sits outside .bio-wrapper so
+    // it stays visible whether collapsed or expanded.
+    const bioWrapper   = document.getElementById('bioWrapper');
+    const bioExpandBtn = document.getElementById('bioExpandBtn');
+    // Only collapse the bio when the artist section itself would overflow
+    // the viewport — that's the case the gradient/expand button is meant to
+    // solve. Remove the class first so the section's full natural height is
+    // measurable, then compare on rAF (after the browser has applied the
+    // layout change from any preceding innerHTML edit).
+    function applyBioCollapsible() {
+      if (!bioWrapper) return;
+      bioWrapper.classList.remove('collapsible', 'expanded');
+      requestAnimationFrame(() => {
+        const section = document.getElementById('current');
+        if (!section) return;
+        if (section.scrollHeight > window.innerHeight) {
+          bioWrapper.classList.add('collapsible');
+        }
+        updateBioExpandLabel();
+      });
+    }
+    // Re-check on viewport resize / orientation change — the line count, and
+    // therefore the natural scrollHeight, depends on the available width.
+    window.addEventListener('resize', () => {
+      if (!bioWrapper || bioWrapper.classList.contains('expanded')) return;
+      applyBioCollapsible();
+    });
+    function updateBioExpandLabel() {
+      if (!bioExpandBtn || !bioWrapper) return;
+      const lang     = (currentBottom && currentBottom.dataset.lang) === 'en' ? 'en' : 'sv';
+      const expanded = bioWrapper.classList.contains('expanded');
+      const key      = lang + (expanded ? 'Expanded' : 'Collapsed');
+      bioExpandBtn.textContent = bioExpandBtn.dataset[key] || (expanded ? 'Show less' : 'Show more');
+    }
+    if (bioExpandBtn) {
+      bioExpandBtn.addEventListener('click', () => {
+        bioWrapper.classList.toggle('expanded');
+        updateBioExpandLabel();
+      });
+    }
+    // Apply to the initially-rendered artist.
+    applyBioCollapsible();
+
+    // EN/SV swap for the "Om projektet" section. Swaps bilingual strings on
+    // any element with data-sv + data-en attributes inside the section, and
+    // re-fires the letter animation on the title + sub-line.
     const aboutSection    = document.getElementById('aboutSection');
     const aboutLangSwitch = document.getElementById('aboutLangSwitch');
-    if (aboutSection && aboutLangSwitch) {
+    function setAboutLang(lang) {
+      if (!aboutSection) return;
+      aboutSection.dataset.lang = lang;
+      if (aboutLangSwitch) aboutLangSwitch.textContent = lang === 'sv' ? 'EN' : 'SV';
+      aboutSection.querySelectorAll('[data-sv][data-en]').forEach((el) => {
+        const val = lang === 'en' ? el.dataset.en : el.dataset.sv;
+        if (val != null) el.textContent = val;
+      });
+      animateLetters('#aboutLabel', FAST_LETTER_OPTS);
+      animateLetters('#subAbout',   FAST_LETTER_OPTS);
+    }
+    if (aboutLangSwitch) {
       aboutLangSwitch.addEventListener('click', () => {
-        const next = aboutSection.dataset.lang === 'sv' ? 'en' : 'sv';
-        aboutSection.dataset.lang = next;
-        aboutLangSwitch.textContent = next === 'sv' ? 'EN' : 'SV';
-
-        // Swap bilingual text on every element that defines both languages.
-        // Setting textContent also clears any letter-animation spans, so the
-        // animation rebuilds cleanly from the new text on the next call.
-        aboutSection.querySelectorAll('[data-sv][data-en]').forEach((el) => {
-          const val = next === 'en' ? el.dataset.en : el.dataset.sv;
-          if (val != null) el.textContent = val;
-        });
-
-        // Re-run the letter scatter on the heading and the sub-line now that
-        // both have new text.
-        animateLetters('#aboutLabel', FAST_LETTER_OPTS);
-        animateLetters('#subAbout',   FAST_LETTER_OPTS);
+        setAboutLang(aboutSection.dataset.lang === 'sv' ? 'en' : 'sv');
       });
     }
 
@@ -2231,8 +2329,9 @@ Different materialities and forms of expression intersect in Bergman's practice.
       document.getElementById('modalBio').innerHTML = renderText(modalBioParts.sv);
       document.getElementById('modalBioEn').innerHTML = renderText(modalBioParts.en);
       document.getElementById('modalLinks').innerHTML = renderArtistLinks(artist);
-      // Reset the modal's language to Swedish each time it opens.
-      setModalLang('sv');
+      // Match the modal to the site-wide language (driven by the landing toggle).
+      const siteLang = (document.getElementById('top')?.dataset.lang) === 'en' ? 'en' : 'sv';
+      setModalLang(siteLang);
 
       sheet.scrollTop = 0;
       overlay.classList.add('open');
@@ -2409,6 +2508,8 @@ Different materialities and forms of expression intersect in Bergman's practice.
       document.getElementById('currentLinks').innerHTML = renderArtistLinks(artist);
       // Reset to Swedish whenever the debug previewer swaps the current artist.
       setCurrentLang('sv');
+      // Re-evaluate collapsible-bio status for the new artist.
+      applyBioCollapsible();
 
       // Update the schedule rows so the new artist is marked .current and the
       // ones before it become .past.
