@@ -296,9 +296,9 @@
     };
 
     const FONTS = {
-      Tsans:  'Times New Roman, serif',
-      serif:  'Times New Roman, Times, serif',
-      sans:   'Open Sans, sans-serif'
+      Tsans:  '"Times New Roman", serif',
+      serif:  '"Times New Roman", Times, serif',
+      sans:   '"Open Sans", sans-serif'
     };
     const FONT_OPTS = { Tsans: 'Tsans', Serif: 'serif', Sans: 'sans' };
     const WEIGHT_OPTS = { '300': 300, '400': 400, '500': 500, '600': 600, '700': 700 };
@@ -855,7 +855,7 @@
           ef.addBinding(el, 'font',   { options: FONT_OPTS   }).on('change', () => reset());
           ef.addBinding(el, 'size',   { min: 0.01, max: 0.20, step: 0.001 }).on('change', () => reset());
           ef.addBinding(el, 'weight', { options: WEIGHT_OPTS }).on('change', () => reset());
-          ef.addBinding(el, 'italic')                            .on('change', () => reset());
+          ef.addBinding(el, 'italic', { label: 'Italic' })       .on('change', () => reset());
           ef.addBinding(el, 'color',  { options: PALETTE_OPTS }).on('change', () => reset());
           ef.addBinding(el, 'align',  { options: ALIGN_OPTS   }).on('change', () => reset());
         } else {
