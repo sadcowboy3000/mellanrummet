@@ -1104,7 +1104,7 @@
       font-family: var(--sans);
       font-style: italic;
       font-size: 13px;
-      line-height: 2.2;
+      line-height: 2;
       color: var(--gray-700);
       text-align: left;
       max-width: 560px;
@@ -1392,11 +1392,11 @@
 
     <div class="about-section" id="aboutSection" data-lang="sv">
       <div class="about-header">
-        <p class="section-label" id="aboutLabel">Om projektet</p>
+        <p class="section-label" id="aboutLabel" data-sv="Om projektet" data-en="About the project">Om projektet</p>
         <button class="lang-switch-inline" id="aboutLangSwitch" type="button">EN</button>
       </div>
       <p class="about-text">
-        Vad händer med ett konstverk när det upphör att tillhöra en enskild individ och istället blir en del av ett gemensamt kretslopp? I en tid där konstscenen präglas av exklusivitet och mätbarhet, går projektet <em>I Mellanrummet</em> i motsatt riktning. Genom att hylla process framför slutprodukt och det kollektiva framför det privata, möjliggör vi en plats där kontrollen förflyttas som en stafettpinne mellan deltagande konstnärer. Här finns inget konstant; istället befinner sig utställningen i <em>mellanrummet</em> – i ett tillstånd av konstant förändring.
+        Vad händer med ett konstverk när det upphör att tillhöra en enskild individ och istället blir en del av ett gemensamt kretslopp? I en tid där konstscenen präglas av exklusivitet och mätbarhet, går projektet <em>I Mellanrummet</em> i motsatt riktning. Genom att hylla process framför slutprodukt och det kollektiva framför det privata, möjliggör vi en plats där kontrollen förflyttas som en stafettpinne mellan deltagande konstnärer. Här finns inget konstant; istället befinner sig utställningen i <em>mellanrummet</em> – i ett tillstånd av konstant <em>förändring</em>.
       <br><br>Tio konstnärer är redo att delta i en kedjereaktion av skapande i ett kvadratmeterstort fönster på Södermalm. Varannan dag öppnas dörren för en ny konstnär som inte bara adderar, utan även transformerar föregående verk till sitt eget. På så vis skapas en ordlös ständigt pågående dialog. Det blir en övning i att släppa taget och låta verket leva sitt eget liv genom andras händer.
 
 
@@ -1404,7 +1404,7 @@
       <p class="about-text-en">What happens to an artwork when it ceases to belong to a single individual and instead becomes part of a shared cycle? In a time when the art scene is characterized by exclusivity and measurability, the project <em>I Mellanrummet</em> moves in the opposite direction. By valuing process over final product and the collective over the private, we create a space where control is passed along between participating artists. Nothing here is constant; instead, the exhibition exists in the in-between — a state of continuous transformation.
       <br><br>Ten artists are ready to take part in a chain reaction of creation within a one-square-meter window on Södermalm. Every other day, the door opens for a new artist who not only adds to, but also transforms the previous work into their own. In this way, a wordless, ongoing dialogue emerges. It becomes an exercise in letting go and allowing the work to live its own life through the hands of others.
       </p>
-      <p class="sub-about">Kurerad och på initiativ av Linnea Wästfelt</p>
+      <p class="sub-about" id="subAbout" data-sv="Kurerad och på initiativ av Linnea Wästfelt" data-en="Curated and initiated by Linnea Wästfelt">Kurerad och på initiativ av Linnea Wästfelt</p>
       <p class="about-meta">Hemsida av Linn Willebrand & Linnea Wästfelt 2026</p>
     </div>
 
@@ -1866,10 +1866,10 @@ Different materialities and forms of expression intersect in Bergman's practice.
     })();
 
     // Trigger the letter animation on the Schema and Om projektet labels
-    // the first time each one scrolls into view.
+    // (and the about sub-line) the first time each one scrolls into view.
     (function setupSectionLabelAnimations() {
       if (!('IntersectionObserver' in window)) return;
-      ['#scheduleLabel', '#aboutLabel'].forEach((sel) => {
+      ['#scheduleLabel', '#aboutLabel', '#subAbout'].forEach((sel) => {
         const el = document.querySelector(sel);
         if (!el) return;
         const observer = new IntersectionObserver((entries) => {
@@ -1978,7 +1978,9 @@ Different materialities and forms of expression intersect in Bergman's practice.
       });
     }
 
-    // Same EN/SV toggle for the "Om projektet" section.
+    // Same EN/SV toggle for the "Om projektet" section. Also swaps the
+    // bilingual strings on any element with data-sv + data-en attributes
+    // inside the section, and re-fires the letter animation on the title.
     const aboutSection    = document.getElementById('aboutSection');
     const aboutLangSwitch = document.getElementById('aboutLangSwitch');
     if (aboutSection && aboutLangSwitch) {
@@ -1986,6 +1988,19 @@ Different materialities and forms of expression intersect in Bergman's practice.
         const next = aboutSection.dataset.lang === 'sv' ? 'en' : 'sv';
         aboutSection.dataset.lang = next;
         aboutLangSwitch.textContent = next === 'sv' ? 'EN' : 'SV';
+
+        // Swap bilingual text on every element that defines both languages.
+        // Setting textContent also clears any letter-animation spans, so the
+        // animation rebuilds cleanly from the new text on the next call.
+        aboutSection.querySelectorAll('[data-sv][data-en]').forEach((el) => {
+          const val = next === 'en' ? el.dataset.en : el.dataset.sv;
+          if (val != null) el.textContent = val;
+        });
+
+        // Re-run the letter scatter on the heading and the sub-line now that
+        // both have new text.
+        animateLetters('#aboutLabel', FAST_LETTER_OPTS);
+        animateLetters('#subAbout',   FAST_LETTER_OPTS);
       });
     }
 
