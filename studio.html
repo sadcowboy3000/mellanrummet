@@ -128,22 +128,50 @@
       width: 100%;
       min-height: 0;
       position: relative;
+      overflow: auto;
     }
     #canvas {
       background: var(--white);
       box-shadow: 0 4px 32px rgba(0,0,0,0.4);
-      max-width: 100%;
-      max-height: 100%;
       display: block;
       cursor: default;
       touch-action: none;
+      flex-shrink: 0; /* don't collapse when wrap scrolls */
     }
     #canvas.draggable { cursor: grab; }
     #canvas.dragging { cursor: grabbing; }
 
+    .zoom-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--ui-muted);
+    }
+    .zoom-toolbar button {
+      background: #2a2a2a;
+      border: 1px solid #333;
+      color: var(--ui-text);
+      font: inherit;
+      padding: 4px 10px;
+      cursor: pointer;
+      border-radius: 2px;
+      font-size: 11px;
+    }
+    .zoom-toolbar button:hover { background: #353535; }
+    .zoom-toolbar input[type="range"] {
+      width: 180px;
+      accent-color: var(--ui-accent);
+    }
+    .zoom-toolbar .zoom-val {
+      font-variant-numeric: tabular-nums;
+      min-width: 42px;
+      text-align: right;
+    }
+
     .stage-controls {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       align-items: center;
     }
     .stage-controls button {
@@ -156,6 +184,16 @@
       border-radius: 2px;
     }
     .stage-controls button:hover { background: #353535; }
+    .stage-controls .play-btn {
+      background: #d4d0c8;
+      color: #111;
+      border-color: #d4d0c8;
+      font-weight: 600;
+      padding: 10px 26px;
+      font-size: 15px;
+      letter-spacing: 0.02em;
+    }
+    .stage-controls .play-btn:hover { background: #fff; }
 
     .stage-info {
       position: absolute;
@@ -219,8 +257,14 @@
       <div class="canvas-wrap">
         <canvas id="canvas" width="1080" height="1920"></canvas>
       </div>
+      <div class="zoom-toolbar">
+        <button id="zoomFit">Fit</button>
+        <button id="zoom100">100%</button>
+        <input type="range" id="zoomSlider" min="0.05" max="2" step="0.01" value="1">
+        <span class="zoom-val" id="zoomVal">100%</span>
+      </div>
       <div class="stage-controls">
-        <button id="play">▶ Play</button>
+        <button id="play" class="play-btn">▶ Play animation</button>
         <button id="reset">↺ Reset</button>
       </div>
       <div class="stage-info" id="stageInfo">1080 × 1920</div>
@@ -586,23 +630,45 @@
       }
     }
 
-    function fitCanvasToStage() {
+    // View state — zoom is the CSS-display multiplier on the canvas's
+    // intrinsic pixels. autoFit re-fits on resize / aspect change.
+    const view = { zoom: 1, autoFit: true };
+    const zoomSlider = document.getElementById('zoomSlider');
+    const zoomValEl  = document.getElementById('zoomVal');
+
+    function fitZoom() {
       const wrap = document.querySelector('.canvas-wrap');
-      const aw = wrap.clientWidth;
-      const ah = wrap.clientHeight;
-      const ratio = canvas.width / canvas.height;
-      let dw, dh;
-      if (aw / ah > ratio) {
-        dh = ah;
-        dw = ah * ratio;
-      } else {
-        dw = aw;
-        dh = aw / ratio;
-      }
-      canvas.style.width = dw + 'px';
-      canvas.style.height = dh + 'px';
-      stageInfo.textContent = `${canvas.width} × ${canvas.height}`;
+      const aw = Math.max(20, wrap.clientWidth  - 20);
+      const ah = Math.max(20, wrap.clientHeight - 20);
+      return Math.min(aw / canvas.width, ah / canvas.height);
     }
+    function applyZoom(z) {
+      view.zoom = z;
+      canvas.style.width  = (canvas.width  * z) + 'px';
+      canvas.style.height = (canvas.height * z) + 'px';
+      const pct = Math.round(z * 100);
+      zoomValEl.textContent = pct + '%';
+      stageInfo.textContent = `${canvas.width} × ${canvas.height} · ${pct}%`;
+      // Sync slider, but only if the change didn't come from it.
+      if (Math.abs(parseFloat(zoomSlider.value) - z) > 0.005) zoomSlider.value = z;
+    }
+    function fitCanvasToStage() {
+      if (view.autoFit) applyZoom(fitZoom());
+      else applyZoom(view.zoom);
+    }
+
+    zoomSlider.addEventListener('input', () => {
+      view.autoFit = false;
+      applyZoom(parseFloat(zoomSlider.value));
+    });
+    document.getElementById('zoomFit').addEventListener('click', () => {
+      view.autoFit = true;
+      applyZoom(fitZoom());
+    });
+    document.getElementById('zoom100').addEventListener('click', () => {
+      view.autoFit = false;
+      applyZoom(1);
+    });
 
     // ── ANIMATION LOOP ─────────────────────────────────────────────────
     let rafId = null;
@@ -743,6 +809,8 @@
       const animFolder = pane.addFolder({ title: 'Animation' });
       animFolder.addBinding(state, 'speed',    { min: 0.5, max: 2,  step: 0.1 });
       animFolder.addBinding(state, 'duration', { min: 4,   max: 12, step: 0.5 });
+      animFolder.addButton({ title: '▶ Play animation' }).on('click', play);
+      animFolder.addButton({ title: '↺ Reset to settled' }).on('click', reset);
 
       // PRESETS folder
       const presetFolder = pane.addFolder({ title: 'Presets', expanded: false });
